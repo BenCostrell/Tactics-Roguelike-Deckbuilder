@@ -13,9 +13,15 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
+        Services.EventManager = new GameEventsManager();
         _mapManager = new MapManager();
         _mapDisplayer = new MapDisplayer();
         _mapManager.InitializeMap(width, height);
         _mapDisplayer.InitializeMapDisplay(_mapManager.map);
+    }
+
+    private void Update()
+    {
+        _mapDisplayer.Update();
     }
 }

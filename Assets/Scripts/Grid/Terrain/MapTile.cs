@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class MapTile
 {
-    private List<GridObject> _containedObjects;
-    public List<MapTile> _neighbors;
+    public List<GridObject> containedObjects { get; private set; }
+    public List<MapTile> neighbors { get; private set; }
     public readonly Coord coord;
     public readonly TerrainData terrain;
 
@@ -13,8 +13,8 @@ public class MapTile
     {
         coord = new Coord(x, y);
         terrain = terrain_;
-        _containedObjects = new List<GridObject>();
-        _neighbors = new List<MapTile>();
+        containedObjects = new List<GridObject>();
+        neighbors = new List<MapTile>();
     }
 
     public void SetNeigbors(MapTile[,] map)
@@ -23,8 +23,18 @@ public class MapTile
         {
             Coord neighborCoord = coord.Add(direction);
             if(neighborCoord.ContainedInMap(map.GetLength(0), map.GetLength(1))){
-                _neighbors.Add(map[neighborCoord.x, neighborCoord.y]);
+                neighbors.Add(map[neighborCoord.x, neighborCoord.y]);
             }
         }
+    }
+
+    public void OnObjectEnter(GridObject gridObject)
+    {
+        containedObjects.Add(gridObject);
+    }
+
+    public void OnObjectExit(GridObject gridObject)
+    {
+        containedObjects.Remove(gridObject);
     }
 }

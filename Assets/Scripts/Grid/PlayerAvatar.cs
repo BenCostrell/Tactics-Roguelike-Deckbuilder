@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GridObject
+public class PlayerAvatar : GridObject
 {
-    private MapTile _currentTile;
+    
 }
