@@ -10,4 +10,9 @@ public class TerrainDataManager
     {
         terrainDataDict = new Dictionary<TerrainData.TerrainType, TerrainData>();
     }
+
+    public void AddData(TerrainData terrainData)
+    {
+        terrainDataDict[terrainData.terrainType] = terrainData;
+    }
 }

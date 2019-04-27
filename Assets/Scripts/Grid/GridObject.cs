@@ -2,9 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class GridObject
+public class GridObject
 {
     protected MapTile _currentTile;
+    public readonly int id;
+    private static int _nextId;
+    public static int nextId
+    {
+        get
+        {
+            _nextId += 1;
+            return _nextId;
+        }
+    }
+    public GridObjectData data { get; private set; }
+
+    public GridObject(GridObjectData data_)
+    {
+        id = nextId;
+        data = data_;
+        if(data.gridObjectType == GridObjectData.GridObjectType.PLAYER)
+        {
+            Services.EventManager.Register<MapTileSelected>(OnTileSelected);
+        }
+    }
 
     public void SpawnOnTile(MapTile mapTile)
     {
@@ -18,6 +39,16 @@ public abstract class GridObject
         ExitTile(originalTile);
         EnterTile(targetTile);
         Services.EventManager.Fire(new GridObjectMoved(this, originalTile, targetTile, path));
+    }
+
+    private void OnTileSelected(MapTileSelected e)
+    {
+        MapTile targetTile = e.mapTile;
+        if (targetTile != _currentTile)
+        {
+            List<MapTile> path = AStarSearch.ShortestPath(_currentTile, targetTile, this);
+            MoveToTile(targetTile, path);
+        }
     }
 
     private void EnterTile(MapTile mapTile)
