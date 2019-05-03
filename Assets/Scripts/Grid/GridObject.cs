@@ -21,10 +21,6 @@ public class GridObject
     {
         id = nextId;
         data = data_;
-        if(data.gridObjectType == GridObjectData.GridObjectType.PLAYER)
-        {
-            Services.EventManager.Register<MapTileSelected>(OnTileSelected);
-        }
     }
 
     public void SpawnOnTile(MapTile mapTile)
@@ -41,16 +37,6 @@ public class GridObject
         Services.EventManager.Fire(new GridObjectMoved(this, originalTile, targetTile, path));
     }
 
-    private void OnTileSelected(MapTileSelected e)
-    {
-        MapTile targetTile = e.mapTile;
-        if (targetTile != _currentTile)
-        {
-            List<MapTile> path = AStarSearch.ShortestPath(_currentTile, targetTile, this);
-            MoveToTile(targetTile, path);
-        }
-    }
-
     private void EnterTile(MapTile mapTile)
     {
         mapTile.OnObjectEnter(this);
@@ -65,6 +51,11 @@ public class GridObject
     public virtual bool IsTilePassable(MapTile mapTile)
     {
         return mapTile.containedObjects.Count == 0 || mapTile == _currentTile;
+    }
+
+    protected bool IsTileReachable(int moves, List<MapTile> path)
+    {
+        return moves >= path.Count;
     }
 }
 

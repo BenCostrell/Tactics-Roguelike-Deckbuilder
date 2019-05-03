@@ -10,14 +10,17 @@ public class LevelManager : MonoBehaviour
     private const int width = 8;
     private const int height = 6;
 
-    private void Start()
+    private void Awake()
     {
         Services.EventManager = new GameEventsManager();
+        Services.GridObjectDataManager = new GridObjectDataManager();
+        Services.TerrainDataManager = new TerrainDataManager();
         _mapManager = new MapManager();
         _mapManager.InitializeMap(width, height);
     }
 
     private void Update()
     {
+        _mapManager.Update();
     }
 }

@@ -4,15 +4,23 @@ using UnityEngine;
 
 public class GridObjectDataManager
 {
-    public Dictionary<GridObjectData.GridObjectType, GridObjectData> gridObjectDataDict;
+    private Dictionary<GridObjectData.GridObjectType, GridObjectData> gridObjectDataDict;
 
     public GridObjectDataManager()
     {
         gridObjectDataDict = new Dictionary<GridObjectData.GridObjectType, GridObjectData>();
+        //temporary, will ultimately load in from spreadsheet
+        AddData(GridObjectData.GridObjectType.PLAYER, Resources.Load<Sprite>("Sprites/helmetDude"));
     }
 
-    public void AddData(GridObjectData gridObjectData)
+    private void AddData(GridObjectData.GridObjectType type, Sprite sprite)
     {
+        GridObjectData gridObjectData = new GridObjectData(type, sprite);
         gridObjectDataDict[gridObjectData.gridObjectType] = gridObjectData;
+    }
+
+    public GridObjectData GetData(GridObjectData.GridObjectType type)
+    {
+        return gridObjectDataDict[type];
     }
 }
