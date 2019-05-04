@@ -10,12 +10,7 @@ public class MapManager
 
     public void Update()
     {
-        //temp for testing
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Player player = _gridObjects[1] as Player;
-            player.Refresh();
-        }
+
     }
 
     public void InitializeMap(int width, int height)
@@ -23,6 +18,7 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
+        SpawnEnemies();
         Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
         _mapDisplayer.InitializeMapDisplay(map);
@@ -56,6 +52,21 @@ public class MapManager
     {
         _gridObjects[gridObject.id] = gridObject;
         gridObject.SpawnOnTile(map[x, y]);
+    }
+
+    private void SpawnEnemies()
+    {
+        int numEnemies = 2;
+        while(numEnemies > 0)
+        {
+            int x = Random.Range(0, map.GetLength(0));
+            int y = Random.Range(0, map.GetLength(1));
+            if(map[x,y].containedObjects.Count == 0)
+            {
+                CreateGridObject(x, y, GridObjectData.GridObjectType.GOBLIN);
+                numEnemies -= 1;
+            }
+        }
     }
 
     private void OnInputDown(InputDown e)

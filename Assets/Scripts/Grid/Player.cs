@@ -41,6 +41,8 @@ public class Player : GridObject
     public Player() : base(Services.GridObjectDataManager.GetData(GridObjectData.GridObjectType.PLAYER))
     {
         Services.EventManager.Register<MapTileSelected>(OnTileSelected);
+        Services.EventManager.Register<PlayerTurnStarted>(Refresh);
+        Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         currentMaxEnergy = BASEMAXENERGY;
         currentEnergy = currentMaxEnergy;
     }
@@ -51,17 +53,24 @@ public class Player : GridObject
         if (targetTile != _currentTile)
         {
             List<MapTile> path = AStarSearch.ShortestPath(_currentTile, targetTile, this);
-            if (IsTileReachable(_currentEnergy, path))
-            {
-                currentEnergy -= path.Count;
-                MoveToTile(targetTile, path);
-            }
+            if (path.Count == 0) return; // target is in front of me but impassable
+            if (path[path.Count - 1] != targetTile) return; // path is as close as it can get but target is impassable
+            if (!IsTileReachable(_currentEnergy, path)) return; // not enough energy to follow path
+            currentEnergy -= path.Count;
+            MoveToTile(targetTile, path);
         }
     }
 
-    public void Refresh()
+    public void Refresh(PlayerTurnStarted e)
     {
         currentEnergy = currentMaxEnergy;
+        Services.EventManager.Register<MapTileSelected>(OnTileSelected);
+    }
+
+    public void OnPlayerTurnEnded(PlayerTurnEnded e)
+    {
+        Services.EventManager.Unregister<MapTileSelected>(OnTileSelected);
+        Services.LevelManager.Invoke("RestartPlayerTurn", 5);
     }
 }
 

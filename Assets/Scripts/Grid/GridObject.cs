@@ -55,7 +55,7 @@ public class GridObject
 
     protected bool IsTileReachable(int moves, List<MapTile> path)
     {
-        return moves >= path.Count;
+        return moves >= path.Count && path.Count != 0;
     }
 }
 
