@@ -38,7 +38,7 @@ public class Player : GridObject
     }
     private const int BASEMAXENERGY = 3;
 
-    public Player() : base(Services.GridObjectDataManager.GetData(GridObjectData.GridObjectType.PLAYER))
+    public Player() : base(Services.GridObjectDataManager.GetData("PLAYER"))
     {
         Services.EventManager.Register<MapTileSelected>(OnTileSelected);
         Services.EventManager.Register<PlayerTurnStarted>(Refresh);
@@ -70,6 +70,8 @@ public class Player : GridObject
     public void OnPlayerTurnEnded(PlayerTurnEnded e)
     {
         Services.EventManager.Unregister<MapTileSelected>(OnTileSelected);
+
+        // temp until enemy turn is implemented
         Services.LevelManager.Invoke("RestartPlayerTurn", 5);
     }
 }

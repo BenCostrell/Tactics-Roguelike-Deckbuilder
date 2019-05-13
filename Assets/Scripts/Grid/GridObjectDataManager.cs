@@ -1,27 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class GridObjectDataManager
 {
-    private Dictionary<GridObjectData.GridObjectType, GridObjectData> gridObjectDataDict;
+    private Dictionary<string, GridObjectData> gridObjectDataDict;
+    private SpriteAtlas atlas;
 
     public GridObjectDataManager()
     {
-        gridObjectDataDict = new Dictionary<GridObjectData.GridObjectType, GridObjectData>();
+        gridObjectDataDict = new Dictionary<string, GridObjectData>();
+        atlas = Resources.Load<SpriteAtlas>("SpriteData/GridObjectSprites");
         //temporary, will ultimately load in from spreadsheet
-        AddData(GridObjectData.GridObjectType.PLAYER, Resources.Load<Sprite>("Sprites/helmetDude"), false, 3);
-        AddData(GridObjectData.GridObjectType.GOBLIN, Resources.Load<Sprite>("Sprites/goblinDude"), true, 1);
+        AddData("PLAYER", false, 3);
+        AddData("GOBLIN", true, 1);
     }
 
-    private void AddData(GridObjectData.GridObjectType type, Sprite sprite, bool enemy, int maxHealth)
+    private void AddData(string name, bool enemy, int maxHealth)
     {
-        GridObjectData gridObjectData = new GridObjectData(type, sprite, enemy, maxHealth);
-        gridObjectDataDict[gridObjectData.gridObjectType] = gridObjectData;
+        GridObjectData gridObjectData = new GridObjectData(name, atlas.GetSprite(name.ToLower()), enemy, maxHealth);
+        gridObjectDataDict[gridObjectData.gridObjectName] = gridObjectData;
     }
 
-    public GridObjectData GetData(GridObjectData.GridObjectType type)
+    public GridObjectData GetData(string name)
     {
-        return gridObjectDataDict[type];
+        return gridObjectDataDict[name];
     }
 }

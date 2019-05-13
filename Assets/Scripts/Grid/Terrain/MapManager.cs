@@ -31,7 +31,7 @@ public class MapManager
             for (int y = 0; y < height; y++)
             {
                 MapTile tile = new MapTile(x, y, 
-                    Services.TerrainDataManager.terrainDataDict[TerrainData.TerrainType.GRASS]);
+                    Services.TerrainDataManager.terrainDataDict["GRASS"]);
                 map[x, y] = tile;
             }
         }
@@ -42,9 +42,9 @@ public class MapManager
         return map;
     }
 
-    private void CreateGridObject(int x, int y, GridObjectData.GridObjectType type)
+    private void CreateGridObject(int x, int y, string name)
     {
-        GridObject gridObject = new GridObject(Services.GridObjectDataManager.GetData(type));
+        GridObject gridObject = new GridObject(Services.GridObjectDataManager.GetData(name));
         CreateGridObject(x, y, gridObject);
     }
 
@@ -63,7 +63,7 @@ public class MapManager
             int y = Random.Range(0, map.GetLength(1));
             if(map[x,y].containedObjects.Count == 0)
             {
-                CreateGridObject(x, y, GridObjectData.GridObjectType.GOBLIN);
+                CreateGridObject(x, y, "GOBLIN");
                 numEnemies -= 1;
             }
         }

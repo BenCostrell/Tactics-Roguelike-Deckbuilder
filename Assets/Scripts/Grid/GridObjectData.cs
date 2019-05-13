@@ -4,15 +4,14 @@ using UnityEngine;
 
 public struct GridObjectData 
 {
-    public enum GridObjectType { PLAYER, GOBLIN }
-    public readonly GridObjectType gridObjectType;
+    public readonly string gridObjectName;
     public readonly Sprite sprite;
     public readonly bool enemy;
     public readonly int maxHealth;
 
-    public GridObjectData(GridObjectType gridObjectType_, Sprite sprite_, bool enemy_, int maxHealth_)
+    public GridObjectData(string gridObjectName_, Sprite sprite_, bool enemy_, int maxHealth_)
     {
-        gridObjectType = gridObjectType_;
+        gridObjectName = gridObjectName_;
         sprite = sprite_;
         enemy = enemy_;
         maxHealth = maxHealth_;

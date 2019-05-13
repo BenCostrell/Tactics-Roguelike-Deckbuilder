@@ -4,13 +4,12 @@ using UnityEngine;
 
 public struct TerrainData
 {
-    public enum TerrainType { GRASS }
-    public readonly TerrainType terrainType;
+    public readonly string terrainName;
     public readonly Sprite sprite;
 
-    public TerrainData(TerrainType terrainType_, Sprite sprite_)
+    public TerrainData(string terrainName_, Sprite sprite_)
     {
-        terrainType = terrainType_;
+        terrainName = terrainName_;
         sprite = sprite_;
     }
 }
