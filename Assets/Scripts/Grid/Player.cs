@@ -45,6 +45,7 @@ public class Player : GridObject
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         currentMaxEnergy = BASEMAXENERGY;
         currentEnergy = currentMaxEnergy;
+        Services.LevelManager.player = this;
     }
 
     private void OnTileSelected(MapTileSelected e)

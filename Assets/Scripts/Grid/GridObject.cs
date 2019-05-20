@@ -26,6 +26,7 @@ public class GridObject
     public void SpawnOnTile(MapTile mapTile)
     {
         EnterTile(mapTile);
+        OnSpawn();
         Services.EventManager.Fire(new GridObjectSpawned(this, mapTile));
     }
 
@@ -56,6 +57,11 @@ public class GridObject
     protected bool IsTileReachable(int moves, List<MapTile> path)
     {
         return moves >= path.Count && path.Count != 0;
+    }
+
+    protected virtual void OnSpawn()
+    {
+
     }
 }
 
