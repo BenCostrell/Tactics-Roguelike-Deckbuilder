@@ -13,13 +13,22 @@ public class GridObjectDataManager
         gridObjectDataDict = new Dictionary<string, GridObjectData>();
         atlas = Resources.Load<SpriteAtlas>("SpriteData/GridObjectSprites");
         //temporary, will ultimately load in from spreadsheet
-        AddData("PLAYER", false, 3);
-        AddData("GOBLIN", true, 1);
+        AddData("PLAYER", 3, 0, new List<string>());
+        AddData("GOBLIN", 1, 2, new List<string>() { "APPROACH" });
     }
 
-    private void AddData(string name, bool enemy, int maxHealth)
+    private void AddData(string name, int maxHealth, int moveSpeed, List<string> enemyTurnBehaviors)
     {
-        GridObjectData gridObjectData = new GridObjectData(name, atlas.GetSprite(name.ToLower()), enemy, maxHealth);
+        List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>();
+        foreach(string behaviorString in enemyTurnBehaviors)
+        {
+            if (EnemyTurnBehavior.behaviors.ContainsKey(behaviorString))
+            {
+                behaviors.Add(EnemyTurnBehavior.behaviors[behaviorString]);
+            }
+        }
+        GridObjectData gridObjectData = new GridObjectData(name, 
+            atlas.GetSprite(name.ToLower()), maxHealth, moveSpeed, behaviors);
         gridObjectDataDict[gridObjectData.gridObjectName] = gridObjectData;
     }
 

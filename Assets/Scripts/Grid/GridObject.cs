@@ -17,10 +17,17 @@ public class GridObject
     }
     public GridObjectData data { get; private set; }
 
+    public int moveSpeed { get { return data.moveSpeed + _bonusMoveSpeed; } }
+    private int _bonusMoveSpeed;
+    public int maxHealth {  get { return data.maxHealth + _bonusMaxHealth; } }
+    private int _bonusMaxHealth;
+    public int currentHealth { get; private set; }
+
     public GridObject(GridObjectData data_)
     {
         id = nextId;
         data = data_;
+        currentHealth = maxHealth;
     }
 
     public void SpawnOnTile(MapTile mapTile)

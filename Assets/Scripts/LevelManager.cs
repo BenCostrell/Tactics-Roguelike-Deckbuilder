@@ -6,15 +6,10 @@ using UnityEngine.SceneManagement;
 public class LevelManager : MonoBehaviour
 {
     private MapManager _mapManager;
-    private EnemyTurnManager _enemyTurnManager;
     [HideInInspector]
     public Player player;
 
     public bool waitForAnimation;
-
-    // set to constants for now, will probably pull values from somewhere eventually
-    private const int width = 8;
-    private const int height = 6;
 
     private void Awake()
     {
@@ -23,13 +18,11 @@ public class LevelManager : MonoBehaviour
         Services.GridObjectDataManager = new GridObjectDataManager();
         Services.TerrainDataManager = new TerrainDataManager();
         _mapManager = new MapManager();
-        _mapManager.InitializeMap(width, height);
     }
 
     private void Update()
     {
         _mapManager.Update();
-        _enemyTurnManager.Update();
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetGame();

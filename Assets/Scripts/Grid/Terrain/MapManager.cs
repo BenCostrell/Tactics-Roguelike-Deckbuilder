@@ -6,11 +6,30 @@ public class MapManager
 {
     public MapTile[,] map { get; private set; }
     private Dictionary<int, GridObject> _gridObjects;
+    private List<GridObject> gridObjectList
+    {
+        get
+        {
+            return new List<GridObject>(_gridObjects.Values);
+        }
+    }
     private MapDisplayer _mapDisplayer;
+    private EnemyTurnManager _enemyTurnManager;
+
+    // set to constants for now, will probably pull values from somewhere eventually
+    private const int width = 8;
+    private const int height = 6;
+
+    public MapManager()
+    {
+        InitializeMap(width, height);
+        _enemyTurnManager = new EnemyTurnManager();
+        Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnd);
+    }
 
     public void Update()
     {
-
+        _enemyTurnManager.Update();
     }
 
     public void InitializeMap(int width, int height)
@@ -82,6 +101,11 @@ public class MapManager
     private bool IsCoordInMap(Coord coord)
     {
         return coord.x >= 0 && coord.x < map.GetLength(0) && coord.y >= 0 && coord.y < map.GetLength(1);
+    }
+
+    public void OnPlayerTurnEnd(PlayerTurnEnded e)
+    {
+        _enemyTurnManager.ExecuteEnemyTurn(gridObjectList);
     }
 }
 
