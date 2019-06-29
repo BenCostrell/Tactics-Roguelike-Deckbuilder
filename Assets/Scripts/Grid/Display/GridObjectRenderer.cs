@@ -15,6 +15,7 @@ public class GridObjectRenderer : MonoBehaviour
         sr.sprite = gridObject.data.sprite;
         sr.sortingLayerName = "Objects";
         id = gridObject.id;
+        gameObject.name = gridObject.data.gridObjectName;
         transform.parent = mapHolder;
         transform.localPosition = new Vector2(mapTile.coord.x, mapTile.coord.y);
     }

@@ -12,11 +12,22 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Services.EventManager.Fire(new InputHover(mousePos));
         if (Input.GetMouseButtonDown(0))
         {
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Services.EventManager.Fire(new InputDown(mousePos));
         }
+    }
+}
+
+public class InputHover : GameEvent
+{
+    public readonly Vector2 worldPos;
+
+    public InputHover(Vector2 worldPos_)
+    {
+        worldPos = worldPos_;
     }
 }
 

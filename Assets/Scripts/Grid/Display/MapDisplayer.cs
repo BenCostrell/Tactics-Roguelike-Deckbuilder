@@ -4,28 +4,26 @@ using UnityEngine;
 
 public class MapDisplayer
 {
-    private SpriteRenderer[,] tileRenderers;
+    private TileRenderer[,] tileRenderers;
     private Dictionary<int, GridObjectRenderer> gridObjectRenderers;
     public Transform mapHolder { get; private set; }
     private readonly Vector2 centerOffset = new Vector2(0.5f, 1f);
     private List<GridObject> currentlyMovingObjects = new List<GridObject>();
+    private Reticle reticle;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
         mapHolder = new GameObject("MapHolder").transform;
         int width = map.GetLength(0);
         int height = map.GetLength(1);
-        tileRenderers = new SpriteRenderer[width, height];
+        tileRenderers = new TileRenderer[width, height];
         gridObjectRenderers = new Dictionary<int, GridObjectRenderer>();
         foreach (MapTile tile in map)
         {
-            GameObject tileObject = new GameObject("Tile: " + tile.coord.x  + ", " + tile.coord.y);
-            SpriteRenderer tileRenderer = tileObject.AddComponent<SpriteRenderer>();
+            GameObject gameObject = new GameObject();
+            TileRenderer tileRenderer = gameObject.AddComponent<TileRenderer>();
+            tileRenderer.Init(tile, mapHolder);
             tileRenderers[tile.coord.x, tile.coord.y] = tileRenderer;
-            tileRenderer.sprite = tile.terrain.sprite;
-            tileRenderer.sortingLayerName = "Map";
-            tileObject.transform.parent = mapHolder;
-            tileObject.transform.localPosition = new Vector3(tile.coord.x, tile.coord.y, 0);
         }
         mapHolder.transform.position = new Vector2(-width / 2, -height / 2) + centerOffset;
         Services.EventManager.Register<GridObjectSpawned>(OnGridObjectSpawned);
@@ -37,6 +35,9 @@ public class MapDisplayer
                 Services.EventManager.Fire(new GridObjectSpawned(gridObject, tile));
             }
         }
+        GameObject reticleObj = new GameObject();
+        reticle = reticleObj.AddComponent<Reticle>();
+        reticle.Init(mapHolder);
     }
 
     public void OnGridObjectMoved(GridObjectMoved e)

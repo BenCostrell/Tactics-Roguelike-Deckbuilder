@@ -1420,7 +1420,7 @@ TextureImporter:
     second: colored_transparent_471
   - first:
       213: 7290773615788488110
-    second: colored_transparent_472
+    second: reticle1
   - first:
       213: 7546962038959717947
     second: colored_transparent_473
@@ -13487,7 +13487,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_472
+      name: reticle1
       rect:
         serializedVersion: 2
         x: 425
