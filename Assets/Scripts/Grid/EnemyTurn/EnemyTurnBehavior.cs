@@ -17,8 +17,8 @@ public abstract class EnemyTurnBehavior
         priority = priority_;
     }
 
-    public virtual TaskQueue OnEnemyTurn(GridObject gridObject)
+    public virtual void OnEnemyTurn(GridObject gridObject)
     {
-        return new TaskQueue(new List<Task>() { new EmptyTask() });
+
     }
 }

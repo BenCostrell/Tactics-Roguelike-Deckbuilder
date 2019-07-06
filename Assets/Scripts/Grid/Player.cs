@@ -51,14 +51,14 @@ public class Player : GridObject
     private void OnTileSelected(MapTileSelected e)
     {
         MapTile targetTile = e.mapTile;
-        if (targetTile != _currentTile)
+        if (targetTile != currentTile)
         {
-            List<MapTile> path = AStarSearch.ShortestPath(_currentTile, targetTile, this);
+            List<MapTile> path = AStarSearch.ShortestPath(currentTile, targetTile, this);
             if (path.Count == 0) return; // target is in front of me but impassable
             if (path[path.Count - 1] != targetTile) return; // path is as close as it can get but target is impassable
             if (!IsTileReachable(_currentEnergy, path)) return; // not enough energy to follow path
             currentEnergy -= path.Count;
-            MoveToTile(targetTile, path);
+            MoveToTile(path);
         }
     }
 
@@ -73,7 +73,7 @@ public class Player : GridObject
         Services.EventManager.Unregister<MapTileSelected>(OnTileSelected);
 
         // temp until enemy turn is implemented
-        Services.LevelManager.Invoke("RestartPlayerTurn", 5);
+        //Services.LevelManager.Invoke("RestartPlayerTurn", 5);
     }
 }
 

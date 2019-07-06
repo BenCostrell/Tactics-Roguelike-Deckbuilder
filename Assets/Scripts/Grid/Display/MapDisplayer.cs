@@ -10,6 +10,8 @@ public class MapDisplayer
     private readonly Vector2 centerOffset = new Vector2(0.5f, 1f);
     private List<GridObject> currentlyMovingObjects = new List<GridObject>();
     private Reticle reticle;
+    private Queue<GridObjectMoved> animationQueue;
+    private bool wasAnimating;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
@@ -38,11 +40,12 @@ public class MapDisplayer
         GameObject reticleObj = new GameObject();
         reticle = reticleObj.AddComponent<Reticle>();
         reticle.Init(mapHolder);
+        animationQueue = new Queue<GridObjectMoved>();
     }
 
     public void OnGridObjectMoved(GridObjectMoved e)
     {
-        gridObjectRenderers[e.gridObject.id].MoveToTile(e);
+        animationQueue.Enqueue(e);
     }
 
     public void OnGridObjectSpawned(GridObjectSpawned e)
@@ -52,8 +55,30 @@ public class MapDisplayer
         gridObjectRenderers[e.gridObject.id] = gridObjectRenderer;
     }
 
+    private void ProcessAnimationQueue()
+    {
+        foreach (GridObjectRenderer renderer in gridObjectRenderers.Values)
+        {
+            if (renderer.animating) return;
+        }
+        if (animationQueue.Count == 0)
+        {
+            if (wasAnimating)
+            {
+                wasAnimating = false;
+                Services.EventManager.Fire(new AllQueuedAnimationsComplete());
+            }
+            return;
+        }
+        GridObjectMoved movement = animationQueue.Dequeue();
+        gridObjectRenderers[movement.gridObject.id].MoveToTile(movement);
+        wasAnimating = true;
+    }
+
     public void Update()
     {
-
+        ProcessAnimationQueue();
     }
 }
+
+public class AllQueuedAnimationsComplete : GameEvent { }

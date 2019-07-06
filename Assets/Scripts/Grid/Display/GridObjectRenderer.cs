@@ -8,6 +8,7 @@ public class GridObjectRenderer : MonoBehaviour
     public int id { get; private set; }
     private Coroutine movementCoroutine;
     private const float moveTimePerTile = 0.2f;
+    public bool animating { get; private set; }
 
     public void Initialize(GridObject gridObject, MapTile mapTile, Transform mapHolder)
     {
@@ -32,6 +33,7 @@ public class GridObjectRenderer : MonoBehaviour
         Coord nextCoord = e.path[0].coord;
         int pathIndex = 0;
         bool done = false;
+        animating = true;
         while(!done)
         {
             timeElapsed += Time.deltaTime;
@@ -55,5 +57,6 @@ public class GridObjectRenderer : MonoBehaviour
             }
             yield return null;
         }
+        animating = false;
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GridObject
 {
-    protected MapTile _currentTile;
+    public MapTile currentTile { get; protected set; }
     public readonly int id;
     private static int _nextId;
     public static int nextId
@@ -37,18 +37,18 @@ public class GridObject
         Services.EventManager.Fire(new GridObjectSpawned(this, mapTile));
     }
 
-    public void MoveToTile(MapTile targetTile, List<MapTile> path)
+    public void MoveToTile(List<MapTile> path)
     {
-        MapTile originalTile = _currentTile;
+        MapTile originalTile = currentTile;
         ExitTile(originalTile);
-        EnterTile(targetTile);
-        Services.EventManager.Fire(new GridObjectMoved(this, originalTile, targetTile, path));
+        EnterTile(path[path.Count-1]);
+        Services.EventManager.Fire(new GridObjectMoved(this, originalTile, path));
     }
 
     private void EnterTile(MapTile mapTile)
     {
         mapTile.OnObjectEnter(this);
-        _currentTile = mapTile;
+        currentTile = mapTile;
     }
 
     private void ExitTile(MapTile mapTile)
@@ -58,7 +58,7 @@ public class GridObject
 
     public virtual bool IsTilePassable(MapTile mapTile)
     {
-        return mapTile.containedObjects.Count == 0 || mapTile == _currentTile;
+        return mapTile.containedObjects.Count == 0 || mapTile == currentTile;
     }
 
     protected bool IsTileReachable(int moves, List<MapTile> path)
@@ -76,14 +76,12 @@ public class GridObjectMoved : GameEvent
 {
     public readonly GridObject gridObject;
     public readonly MapTile originalTile;
-    public readonly MapTile targetTile;
     public readonly List<MapTile> path;
 
-    public GridObjectMoved(GridObject gridObject_, MapTile originalTile_, MapTile targetTile_, List<MapTile> path_)
+    public GridObjectMoved(GridObject gridObject_, MapTile originalTile_, List<MapTile> path_)
     {
         gridObject = gridObject_;
         originalTile = originalTile_;
-        targetTile = targetTile_;
         path = path_;
     }
 }

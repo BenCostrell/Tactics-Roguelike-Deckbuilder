@@ -29,6 +29,7 @@ public class MapManager
 
     public void Update()
     {
+        _mapDisplayer.Update();
         _enemyTurnManager.Update();
     }
 

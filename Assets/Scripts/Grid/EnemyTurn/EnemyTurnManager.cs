@@ -6,33 +6,79 @@ using System.Linq;
 
 public class EnemyTurnManager
 {
-    private TaskManager _tm;
+    private StateMachine<EnemyTurnManager> _stateMachine;
+    public List<GridObject> gridObjects { get; private set; }
 
     public EnemyTurnManager()
     {
-        _tm = new TaskManager();
+        _stateMachine = new StateMachine<EnemyTurnManager>(this);
+        _stateMachine.InitializeState<Waiting>();
     }
 
-    public void ExecuteEnemyTurn(List<GridObject> gridObjects)
+    public void ExecuteEnemyTurn(List<GridObject> gridObjects_)
     {
-        TaskQueue enemyTurnTasks = new TaskQueue();
-        foreach(GridObject gridObject in gridObjects)
+        gridObjects = gridObjects_;
+        Services.EventManager.Fire(new EnemyTurnStarted());
+    }
+
+    public void EnactEnemyBehaviors()
+    {
+        foreach (GridObject gridObject in gridObjects)
         {
             List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>(
                 gridObject.data.enemyTurnBehaviors.OrderBy(b => b.priority));
-            foreach(EnemyTurnBehavior behavior in behaviors)
+            foreach (EnemyTurnBehavior behavior in behaviors)
             {
-                enemyTurnTasks.Then(behavior.OnEnemyTurn(gridObject));
+                behavior.OnEnemyTurn(gridObject);
             }
         }
-
-        enemyTurnTasks.Add(new ParameterizedActionTask<PlayerTurnStarted>(
-            Services.EventManager.Fire, new PlayerTurnStarted()));
-        _tm.AddTask(enemyTurnTasks);
     }
 
     public void Update()
     {
-        _tm.Update();
+        _stateMachine.Update();
     }
+
+    private class Animating : StateMachine<EnemyTurnManager>.State
+    {
+        public override void OnEnter()
+        {
+            Context.EnactEnemyBehaviors();
+            Services.EventManager.Register<AllQueuedAnimationsComplete>(OnAnimationsComplete);
+        }
+
+        public void OnAnimationsComplete(AllQueuedAnimationsComplete e)
+        {
+            TransitionTo<Waiting>();
+        }
+
+        public override void OnExit()
+        {
+            Services.EventManager.Unregister<AllQueuedAnimationsComplete>(OnAnimationsComplete);
+        }
+    }
+
+    private class Waiting : StateMachine<EnemyTurnManager>.State
+    {
+        public override void OnEnter()
+        {
+            Services.EventManager.Register<EnemyTurnStarted>(OnEnemyTurnStarted);
+            Services.EventManager.Fire(new PlayerTurnStarted());
+        }
+
+        public void OnEnemyTurnStarted(EnemyTurnStarted e)
+        {
+            TransitionTo<Animating>();
+        }
+
+        public override void OnExit()
+        {
+            Services.EventManager.Unregister<EnemyTurnStarted>(OnEnemyTurnStarted);
+        }
+    }
+}
+
+public class EnemyTurnStarted : GameEvent
+{
+
 }
