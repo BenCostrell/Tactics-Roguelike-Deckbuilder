@@ -7,7 +7,8 @@ public abstract class EnemyTurnBehavior
     public static Dictionary<string, EnemyTurnBehavior> behaviors =
         new Dictionary<string, EnemyTurnBehavior>()
         {
-            {"APPROACH", new Approach() }
+            {"APPROACH", new Approach() },
+            { "ATTACK", new Attack() }
         };
 
     public readonly int priority;

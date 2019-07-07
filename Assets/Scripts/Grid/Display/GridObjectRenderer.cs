@@ -7,8 +7,14 @@ public class GridObjectRenderer : MonoBehaviour
     private SpriteRenderer sr;
     public int id { get; private set; }
     private Coroutine movementCoroutine;
+    private Coroutine attackCoroutine;
     private const float moveTimePerTile = 0.2f;
+    private const float preAttackWait = 0.3f;
+    private const float attackAnimationExtendDuration = 0.3f;
+    private const float attackAnimationRetractDuration = 0.075f;
+    private const float attackDistance = 0.3f;
     public bool animating { get; private set; }
+    private HealthBar healthBarSr;
 
     public void Initialize(GridObject gridObject, MapTile mapTile, Transform mapHolder)
     {
@@ -19,11 +25,49 @@ public class GridObjectRenderer : MonoBehaviour
         gameObject.name = gridObject.data.gridObjectName;
         transform.parent = mapHolder;
         transform.localPosition = new Vector2(mapTile.coord.x, mapTile.coord.y);
+        healthBarSr = new GameObject().AddComponent<HealthBar>();
+        healthBarSr.Initialize(this, gridObject);
     }
 
     public void MoveToTile(GridObjectMoved e)
     {
         movementCoroutine = StartCoroutine(MovementCoroutine(e));
+    }
+
+    public void Attack(ObjectAttacked e)
+    {
+        attackCoroutine = StartCoroutine(AttackCoroutine(e));
+    }
+
+    IEnumerator AttackCoroutine(ObjectAttacked e)
+    {
+        animating = true;
+        float timeElapsed = 0;
+        Coord direction = Coord.Subtract(e.target.currentTile.coord, e.attacker.currentTile.coord);
+        direction = new Coord(System.Math.Sign(direction.x), System.Math.Sign(direction.y));
+        Vector3 attackDiff = new Vector3(direction.x, direction.y, 0).normalized * attackDistance;
+        Vector3 basePos = transform.localPosition;
+        Vector3 target = basePos + attackDiff;
+        while (timeElapsed < preAttackWait + attackAnimationExtendDuration + attackAnimationRetractDuration)
+        {
+            timeElapsed += Time.deltaTime;
+            if(timeElapsed <= attackAnimationExtendDuration && timeElapsed > preAttackWait)
+            {
+                transform.localPosition = Vector3.Lerp(basePos, target,
+                    EasingEquations.Easing.QuadEaseOut((timeElapsed - preAttackWait)
+                    / attackAnimationExtendDuration));
+            }
+            else
+            {
+                transform.localPosition = Vector3.Lerp(target, basePos,
+                    EasingEquations.Easing.QuadEaseIn(
+                    (timeElapsed - attackAnimationExtendDuration - preAttackWait) /
+                    attackAnimationRetractDuration));
+            }
+            yield return null;
+        }
+        Services.EventManager.Fire(new AttackAnimationComplete(e.target.id));
+        animating = false;
     }
 
     IEnumerator MovementCoroutine(GridObjectMoved e)
@@ -58,5 +102,15 @@ public class GridObjectRenderer : MonoBehaviour
             yield return null;
         }
         animating = false;
+    }
+}
+
+public class AttackAnimationComplete : GameEvent
+{
+    public readonly int id;
+
+    public AttackAnimationComplete(int id_)
+    {
+        id = id_;
     }
 }

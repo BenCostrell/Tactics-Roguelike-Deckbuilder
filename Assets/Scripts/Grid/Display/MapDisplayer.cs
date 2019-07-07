@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ public class MapDisplayer
     private readonly Vector2 centerOffset = new Vector2(0.5f, 1f);
     private List<GridObject> currentlyMovingObjects = new List<GridObject>();
     private Reticle reticle;
-    private Queue<GridObjectMoved> animationQueue;
+    private Queue<GameEvent> animationQueue;
     private bool wasAnimating;
 
     public void InitializeMapDisplay(MapTile[,] map)
@@ -30,7 +31,8 @@ public class MapDisplayer
         mapHolder.transform.position = new Vector2(-width / 2, -height / 2) + centerOffset;
         Services.EventManager.Register<GridObjectSpawned>(OnGridObjectSpawned);
         Services.EventManager.Register<GridObjectMoved>(OnGridObjectMoved);
-        foreach(MapTile tile in map)
+        Services.EventManager.Register<ObjectAttacked>(OnObjectAttacked);
+        foreach (MapTile tile in map)
         {
             foreach(GridObject gridObject in tile.containedObjects)
             {
@@ -40,7 +42,12 @@ public class MapDisplayer
         GameObject reticleObj = new GameObject();
         reticle = reticleObj.AddComponent<Reticle>();
         reticle.Init(mapHolder);
-        animationQueue = new Queue<GridObjectMoved>();
+        animationQueue = new Queue<GameEvent>();
+    }
+
+    public void OnObjectAttacked(ObjectAttacked e)
+    {
+        animationQueue.Enqueue(e);
     }
 
     public void OnGridObjectMoved(GridObjectMoved e)
@@ -70,8 +77,19 @@ public class MapDisplayer
             }
             return;
         }
-        GridObjectMoved movement = animationQueue.Dequeue();
-        gridObjectRenderers[movement.gridObject.id].MoveToTile(movement);
+        GameEvent animationEvent = animationQueue.Dequeue();
+        Type eventType = animationEvent.GetType();
+        if(eventType == typeof(GridObjectMoved))
+        {
+            GridObjectMoved movement = animationEvent as GridObjectMoved;
+            gridObjectRenderers[movement.gridObject.id].MoveToTile(movement);
+        }
+        else if (eventType == typeof(ObjectAttacked))
+        {
+            ObjectAttacked attack = animationEvent as ObjectAttacked;
+            gridObjectRenderers[attack.attacker.id].Attack(attack);
+        }
+        
         wasAnimating = true;
     }
 

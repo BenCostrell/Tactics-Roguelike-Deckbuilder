@@ -13,11 +13,15 @@ public class GridObjectDataManager
         gridObjectDataDict = new Dictionary<string, GridObjectData>();
         atlas = Resources.Load<SpriteAtlas>("SpriteData/GridObjectSprites");
         //temporary, will ultimately load in from spreadsheet
-        AddData("PLAYER", 3, 0, new List<string>());
-        AddData("GOBLIN", 1, 2, new List<string>() { "APPROACH" });
+        AddData("PLAYER", 3, 0, 1, 0, new List<string>(), GridObjectData.TargetPriority.NONE,
+            GridObjectData.Phylum.PLAYER);
+        AddData("GOBLIN", 1, 2, 1, 1, new List<string>() { "APPROACH", "ATTACK" },
+            GridObjectData.TargetPriority.PLAYER_PLANT, GridObjectData.Phylum.ENEMY);
     }
 
-    private void AddData(string name, int maxHealth, int moveSpeed, List<string> enemyTurnBehaviors)
+    private void AddData(string name, int maxHealth, int moveSpeed, int attackRange,
+        int attackDamage, List<string> enemyTurnBehaviors, 
+        GridObjectData.TargetPriority targetPriority, GridObjectData.Phylum phylum)
     {
         List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>();
         foreach(string behaviorString in enemyTurnBehaviors)
@@ -28,7 +32,8 @@ public class GridObjectDataManager
             }
         }
         GridObjectData gridObjectData = new GridObjectData(name, 
-            atlas.GetSprite(name.ToLower()), maxHealth, moveSpeed, behaviors);
+            atlas.GetSprite(name.ToLower()), maxHealth, moveSpeed, attackRange, attackDamage,
+            behaviors, targetPriority, phylum);
         gridObjectDataDict[gridObjectData.gridObjectName] = gridObjectData;
     }
 

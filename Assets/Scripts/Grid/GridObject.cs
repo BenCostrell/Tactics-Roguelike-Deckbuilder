@@ -22,6 +22,8 @@ public class GridObject
     public int maxHealth {  get { return data.maxHealth + _bonusMaxHealth; } }
     private int _bonusMaxHealth;
     public int currentHealth { get; private set; }
+    public int attackDamage {  get { return data.attackDamage + _bonusAttackDamage; } }
+    private int _bonusAttackDamage;
 
     public GridObject(GridObjectData data_)
     {
@@ -70,6 +72,24 @@ public class GridObject
     {
 
     }
+
+    public void TakeDamage(int damage)
+    {
+        int prevHealth = currentHealth;
+        currentHealth -= damage;
+        if(currentHealth <= 0)
+        {
+            currentHealth = 0;
+            Die();
+        }
+        int damageTaken = prevHealth - currentHealth;
+        Services.EventManager.Fire(new DamageTaken(this, damageTaken));
+    }
+
+    public void Die()
+    {
+
+    }
 }
 
 public class GridObjectMoved : GameEvent
@@ -95,6 +115,18 @@ public class GridObjectSpawned : GameEvent
     {
         gridObject = gridObject_;
         mapTile = mapTile_;
+    }
+}
+
+public class DamageTaken : GameEvent
+{
+    public readonly GridObject gridObject;
+    public readonly int damage;
+
+    public DamageTaken(GridObject gridObject_, int damage_)
+    {
+        gridObject = gridObject_;
+        damage = damage_;
     }
 }
 
