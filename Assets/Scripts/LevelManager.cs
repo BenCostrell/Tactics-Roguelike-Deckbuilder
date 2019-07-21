@@ -25,6 +25,7 @@ public class LevelManager : MonoBehaviour
     private void Update()
     {
         _mapManager.Update();
+        Services.CardManager.Update();
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetGame();

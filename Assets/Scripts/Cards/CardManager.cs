@@ -37,6 +37,11 @@ public class CardManager
         //
     }
 
+    public void Update()
+    {
+        cardDisplayer.Update();
+    }
+
     public void OnLevelStart()
     {
         currentDeck = new List<Card>(fullDeck);
@@ -45,7 +50,7 @@ public class CardManager
 
     public void AcquireCard(Card card)
     {
-        discardPile.Add(card);
+        DiscardCard(card);
     }
 
     public void DrawCard()
@@ -81,7 +86,7 @@ public class CardManager
         int newHandSize = Mathf.Min(maxStartingCards, hand.Count + marginalCardsPerTurn);
         foreach (Card card in hand)
         {
-            discardPile.Add(card);
+            DiscardCard(card);
         }
         hand.Clear();
         for (int i = 0; i < newHandSize; i++)
@@ -103,6 +108,12 @@ public class CardManager
         }
         return -1;
     }
+
+    private void DiscardCard(Card card)
+    {
+        discardPile.Add(card);
+        Services.EventManager.Fire(new CardDiscarded(card));
+    }
 }
 
 public class CardDrawn : GameEvent
@@ -116,3 +127,12 @@ public class CardDrawn : GameEvent
 }
 
 public class DeckReshuffled : GameEvent { }
+
+public class CardDiscarded : GameEvent
+{
+    public readonly Card card;
+    public CardDiscarded(Card card_)
+    {
+        card = card_;
+    }
+}

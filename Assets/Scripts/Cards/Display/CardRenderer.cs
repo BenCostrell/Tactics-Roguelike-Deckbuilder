@@ -12,8 +12,8 @@ public class CardRenderer : MonoBehaviour
     public int id { get; private set; }
     private StateMachine<CardRenderer> stateMachine;
     private static Vector3 handBasePos = new Vector3(0, -4f,0);
-    private static Vector3 handSpacing = new Vector3(1.25f, -0.2f, 0.1f);
-    private const float handSpreadAngle = 5;
+    private static Vector3 handSpacing = new Vector3(1.25f, -0.1f, 0.1f);
+    private const float handSpreadAngle = 2.5f;
     public SortingGroup sortingGroup;
     private Vector3 baseScale;
     private const float hoverScaleFactor = 1.2f;
@@ -128,54 +128,76 @@ public class BeingDrawn : CardState
         base.OnEnter();
         // for now just put it straight in place
         Context.SetHandPos();
-        TransitionTo<InHand>();
+        TransitionTo<Unhovered>();
     }
 }
 
-public class InHand : CardState
+public abstract class InHand : CardState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
+        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
+        Services.EventManager.Register<CardCast>(OnCardCast);
+    }
+
+    public void OnCardDiscarded(CardDiscarded e)
+    {
+        if (e.card.id != Context.id) return;
+        // TODO: transition to a discarding animation
+        TransitionTo<Inactive>();
+    }
+
+    public void OnCardCast(CardCast e)
+    {
+        if (e.card.id != Context.id) return;
+        // TODO: transition to a discarding animation
+        TransitionTo<Inactive>();
+    }
+
+    public virtual void OnCardRendererHover(CardRendererHover e)
+    {
+        
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+
+        Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
+    }
+}
+
+public class Unhovered : InHand
 {
     public override void OnEnter()
     {
         base.OnEnter();
         Context.SetHoverStatus(false);
-        Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
     }
 
-    public void OnCardRendererHover(CardRendererHover e)
+    public override void OnCardRendererHover(CardRendererHover e)
     {
+        base.OnCardRendererHover(e);
         if (e.id != Context.id) return;
         TransitionTo<Hovered>();
     }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-
-        Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
-    }
 }
 
-public class Hovered : CardState
+public class Hovered : InHand
 {
     public override void OnEnter()
     {
         base.OnEnter();
         Context.SetHoverStatus(true);
-        Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
     }
 
-    public void OnCardRendererHover(CardRendererHover e)
+    public override void OnCardRendererHover(CardRendererHover e)
     {
         if (e.id != Context.id)
         {
-            TransitionTo<InHand>();
+            TransitionTo<Unhovered>();
         }
-    }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-
-        Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
     }
 }
