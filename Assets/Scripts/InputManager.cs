@@ -18,6 +18,15 @@ public class InputManager : MonoBehaviour
         {
             Services.EventManager.Fire(new InputDown(mousePos));
         }
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(ray.origin, ray.direction);
+        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+        int id = -1;
+        if(hit.collider != null)
+        {
+            id = hit.transform.GetComponentInParent<CardRenderer>().id;
+        }
+        Services.EventManager.Fire(new CardRendererHover(id));
     }
 }
 
@@ -38,5 +47,14 @@ public class InputDown : GameEvent
     public InputDown(Vector2 worldPos_)
     {
         worldPos = worldPos_;
+    }
+}
+
+public class CardRendererHover : GameEvent
+{
+    public readonly int id;
+    public CardRendererHover(int id_)
+    {
+        id = id_;
     }
 }

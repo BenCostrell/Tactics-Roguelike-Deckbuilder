@@ -7,7 +7,7 @@ public class GridObject
     public MapTile currentTile { get; protected set; }
     public readonly int id;
     private static int _nextId;
-    public static int nextId
+    private static int nextId
     {
         get
         {

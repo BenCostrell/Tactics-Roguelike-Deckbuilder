@@ -8,7 +8,7 @@ public class MapDisplayer
     private TileRenderer[,] tileRenderers;
     private Dictionary<int, GridObjectRenderer> gridObjectRenderers;
     public Transform mapHolder { get; private set; }
-    private readonly Vector2 centerOffset = new Vector2(0.5f, 1f);
+    private readonly Vector2 centerOffset = new Vector2(0.5f, 2f);
     private List<GridObject> currentlyMovingObjects = new List<GridObject>();
     private Reticle reticle;
     private Queue<GameEvent> animationQueue;

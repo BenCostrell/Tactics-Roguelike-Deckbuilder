@@ -38,8 +38,8 @@ public class StateMachine<TContext>
         {
             if (currentState != null) currentState.OnExit();
             currentState = _pendingState;
-            currentState.OnEnter();
             _pendingState = null;
+            currentState.OnEnter();
         }
     }
 

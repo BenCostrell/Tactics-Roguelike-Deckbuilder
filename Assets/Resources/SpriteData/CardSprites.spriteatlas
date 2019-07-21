@@ -29,11 +29,14 @@ SpriteAtlas:
       enableRotation: 1
       enableTightPacking: 1
     variantMultiplier: 1
-    packables: []
-    totalSpriteSurfaceArea: 0
+    packables:
+    - {fileID: 1440083381349893897, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    totalSpriteSurfaceArea: 256
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 1440083381349893897, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - whack
   m_Tag: CardSprites
   m_IsVariant: 0

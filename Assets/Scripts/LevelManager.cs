@@ -16,8 +16,10 @@ public class LevelManager : MonoBehaviour
         Services.LevelManager = this;
         Services.EventManager = new GameEventsManager();
         Services.GridObjectDataManager = new GridObjectDataManager();
+        Services.CardDataManager = new CardDataManager();
         Services.TerrainDataManager = new TerrainDataManager();
         _mapManager = new MapManager();
+        if (Services.CardManager == null) Services.CardManager = new CardManager();
     }
 
     private void Update()
@@ -26,6 +28,10 @@ public class LevelManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetGame();
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Services.CardManager.OnLevelStart();
         }
     }
 

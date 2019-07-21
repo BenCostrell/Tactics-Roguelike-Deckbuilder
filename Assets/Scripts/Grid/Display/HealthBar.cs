@@ -11,7 +11,7 @@ public class HealthBar : MonoBehaviour
     private SpriteRenderer animatedBar;
     private readonly Vector2 offset = new Vector2(-0.25f, 0.5f);
     private float animTimeRemaining;
-    private const float damageAnimDuration = 0.5f;
+    private const float damageAnimDuration = 0.25f;
     private float damageDistance;
     private float healthProportion;
     private Queue<HealthChangeAnimation> animQueue;

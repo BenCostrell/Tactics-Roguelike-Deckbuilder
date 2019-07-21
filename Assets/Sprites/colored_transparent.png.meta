@@ -2497,7 +2497,7 @@ TextureImporter:
     second: colored_transparent_830
   - first:
       213: 1440083381349893897
-    second: colored_transparent_831
+    second: whack
   - first:
       213: -637196537932161559
     second: colored_transparent_832
@@ -21026,7 +21026,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_831
+      name: whack
       rect:
         serializedVersion: 2
         x: 0
