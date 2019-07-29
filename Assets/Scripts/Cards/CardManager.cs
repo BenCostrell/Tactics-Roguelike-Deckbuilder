@@ -55,10 +55,15 @@ public class CardManager
 
     public void DrawCard()
     {
+        Debug.Log("drawing from deck of size " + currentDeck.Count);
         if (currentDeck.Count == 0)
         {
-            currentDeck = discardPile;
-            Services.EventManager.Fire(new DeckReshuffled());
+            currentDeck = new List<Card>(discardPile);
+            DeckReshuffled deckReshuffledEvent = new DeckReshuffled(currentDeck.Count);
+            Services.EventManager.Fire(new CardEventQueued(deckReshuffledEvent, -1));
+            discardPile.Clear();
+            Debug.Log("deck count: " + currentDeck.Count);
+            Debug.Log("discard count: " + discardPile.Count);
         }
         if (currentDeck.Count == 0)
         {
@@ -67,7 +72,8 @@ public class CardManager
         Card card = currentDeck[Random.Range(0, currentDeck.Count)];
         currentDeck.Remove(card);
         hand.Add(card);
-        Services.EventManager.Fire(new CardDrawn(card));
+        CardDrawn cardDrawnEvent = new CardDrawn(card, currentDeck.Count);
+        Services.EventManager.Fire(new CardEventQueued(cardDrawnEvent, card.id));
     }
 
     public void OnCardCast(CardCast e)
@@ -83,12 +89,14 @@ public class CardManager
 
     public void DrawNewHand()
     {
+        Services.EventManager.Fire(new CardEventQueued(new CardAnimationPause(0.01f)));
         int newHandSize = Mathf.Min(maxStartingCards, hand.Count + marginalCardsPerTurn);
         foreach (Card card in hand)
         {
             DiscardCard(card);
         }
         hand.Clear();
+        Services.EventManager.Fire(new CardEventQueued(new CardAnimationPause(0.5f)));
         for (int i = 0; i < newHandSize; i++)
         {
             DrawCard();
@@ -112,27 +120,55 @@ public class CardManager
     private void DiscardCard(Card card)
     {
         discardPile.Add(card);
-        Services.EventManager.Fire(new CardDiscarded(card));
+        CardDiscarded cardDiscardedEvent = new CardDiscarded(card, discardPile.Count);
+        Services.EventManager.Fire(new CardEventQueued(cardDiscardedEvent, card.id));
     }
 }
 
-public class CardDrawn : GameEvent
+public class CardEventQueued : GameEvent
 {
-    public readonly Card card;
+    public readonly CardEvent cardEvent;
+    public readonly int id;
 
-    public CardDrawn(Card card_)
+    public CardEventQueued(CardEvent cardEvent_, int id_ = -1)
     {
-        card = card_;
+        cardEvent = cardEvent_;
+        id = id_;
     }
 }
 
-public class DeckReshuffled : GameEvent { }
+public abstract class CardEvent : GameEvent { }
 
-public class CardDiscarded : GameEvent
+public class CardDrawn : CardEvent
 {
     public readonly Card card;
-    public CardDiscarded(Card card_)
+    public readonly int deckCount;
+
+    public CardDrawn(Card card_, int deckCount_)
     {
         card = card_;
+        deckCount = deckCount_;
+    }
+}
+
+public class DeckReshuffled : CardEvent
+{
+    public readonly int deckCount;
+
+    public DeckReshuffled(int deckCount_)
+    {
+        deckCount = deckCount_;
+    }
+}
+
+public class CardDiscarded : CardEvent
+{
+    public readonly Card card;
+    public readonly int discardPileCount;
+
+    public CardDiscarded(Card card_, int discardPileCount_)
+    {
+        card = card_;
+        discardPileCount = discardPileCount_;
     }
 }

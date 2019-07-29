@@ -28,6 +28,7 @@ public class CardRenderer : MonoBehaviour
         cardText.text = card.data.text;
         stateMachine = new StateMachine<CardRenderer>(this);
         stateMachine.InitializeState<Inactive>();
+        transform.parent = cardHolder;
         baseScale = transform.localScale;
     }
 
@@ -43,7 +44,7 @@ public class CardRenderer : MonoBehaviour
         stateMachine.Update();
     }
 
-    private Vector3 GetHandPos()
+    public Vector3 GetHandPos()
     {
         float middleOffset = GetMiddleOffset();
         return handBasePos
@@ -52,7 +53,7 @@ public class CardRenderer : MonoBehaviour
             + (middleOffset * handSpacing.z * Vector3.forward);
     }
 
-    private Quaternion GetHandRot()
+    public Quaternion GetHandRot()
     {
         Quaternion rotation =  Quaternion.Euler(0, 0, -handSpreadAngle * GetMiddleOffset());
         return rotation;
@@ -123,12 +124,52 @@ public class Inactive : CardState
 
 public class BeingDrawn : CardState
 {
+    private const float drawAnimationDuration = 0.3f;
+    private const float staggerTime = 0.1f;
+    private float timeElapsed;
+    private Vector3 targetScale;
+    private Vector3 targetPos;
+    private Quaternion targetRot;
+    private Vector3 startPos;
+    private bool staggerFired;
+
     public override void OnEnter()
     {
         base.OnEnter();
-        // for now just put it straight in place
+        targetScale = Context.transform.localScale;
+        targetRot = Context.GetHandRot();
+        targetPos = Context.GetHandPos();
+        Context.transform.position = DeckCountUI.frameTransform.position;
+        startPos = Context.transform.localPosition;
+        Context.transform.localScale = Vector3.one;
+        timeElapsed = 0;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        timeElapsed += Time.deltaTime;
+        Context.transform.localScale = Vector3.Lerp(Vector3.one, targetScale,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / drawAnimationDuration));
+        Context.transform.localPosition = Vector3.Lerp(startPos, targetPos,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / drawAnimationDuration));
+        Context.transform.localRotation = Quaternion.Lerp(Quaternion.identity, targetRot,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / drawAnimationDuration));
+        if (timeElapsed > staggerTime && !staggerFired)
+        {
+            staggerFired = true;
+            Services.EventManager.Fire(new CardAnimationComplete());
+        }
+        if (timeElapsed > drawAnimationDuration)
+        {
+            TransitionTo<Unhovered>();
+        }
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
         Context.SetHandPos();
-        TransitionTo<Unhovered>();
     }
 }
 
@@ -138,22 +179,20 @@ public abstract class InHand : CardState
     {
         base.OnEnter();
         Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
-        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
-        Services.EventManager.Register<CardCast>(OnCardCast);
+        Services.EventManager.Register<CardEventQueued>(OnCardEventQueued);
     }
 
-    public void OnCardDiscarded(CardDiscarded e)
+    public void OnCardEventQueued(CardEventQueued e)
     {
-        if (e.card.id != Context.id) return;
-        // TODO: transition to a discarding animation
-        TransitionTo<Inactive>();
-    }
-
-    public void OnCardCast(CardCast e)
-    {
-        if (e.card.id != Context.id) return;
-        // TODO: transition to a discarding animation
-        TransitionTo<Inactive>();
+        if (e.id != Context.id) return;
+        if(e.cardEvent is CardDiscarded)
+        {
+            TransitionTo<WaitingToBeDiscarded>();
+        }
+        else if(e.cardEvent is CardCast)
+        {
+            TransitionTo<Inactive>();
+        }
     }
 
     public virtual void OnCardRendererHover(CardRendererHover e)
@@ -164,8 +203,29 @@ public abstract class InHand : CardState
     public override void OnExit()
     {
         base.OnExit();
-
+        Services.EventManager.Unregister<CardEventQueued>(OnCardEventQueued);
         Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
+    }
+}
+
+public class WaitingToBeDiscarded : CardState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
+    }
+
+    public void OnCardDiscarded(CardDiscarded e)
+    {
+        if (e.card.id != Context.id) return;
+        TransitionTo<BeingDiscarded>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<CardDiscarded>(OnCardDiscarded);
     }
 }
 
@@ -201,3 +261,54 @@ public class Hovered : InHand
         }
     }
 }
+
+public class BeingDiscarded : CardState
+{
+    private const float discardAnimationDuration = 0.3f;
+    private const float staggerTime = 0.1f;
+    private bool staggerFired;
+    private float timeElapsed;
+    private Vector3 startScale;
+    private Vector3 startPos;
+    private Quaternion startRot;
+    private Transform cardHolder;
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        cardHolder = Context.transform.parent;
+        Context.transform.parent = DiscardPileUI.frameTransform;
+        startPos = Context.transform.localPosition;
+        startRot = Context.transform.localRotation;
+        timeElapsed = 0;
+        staggerFired = false;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        timeElapsed += Time.deltaTime;
+        Context.transform.localScale = Vector3.Lerp(startScale, Vector3.one,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / discardAnimationDuration));
+        Context.transform.localPosition = Vector3.Lerp(startPos, Vector3.zero,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / discardAnimationDuration));
+        Context.transform.localRotation = Quaternion.Lerp(startRot, Quaternion.identity,
+            EasingEquations.Easing.QuadEaseOut(timeElapsed / discardAnimationDuration));
+        if(timeElapsed > staggerTime && !staggerFired)
+        {
+            staggerFired = true;
+            Services.EventManager.Fire(new CardAnimationComplete());
+        }
+        if (timeElapsed > discardAnimationDuration)
+        {
+            TransitionTo<Inactive>();
+        }
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Context.transform.parent = cardHolder;
+    }
+}
+

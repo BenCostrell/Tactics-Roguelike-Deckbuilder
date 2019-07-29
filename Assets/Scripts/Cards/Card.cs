@@ -47,7 +47,7 @@ public class Card
     }
 }
 
-public class CardCast : GameEvent
+public class CardCast : CardEvent
 {
     public readonly Card card;
     public readonly MapTile target;
