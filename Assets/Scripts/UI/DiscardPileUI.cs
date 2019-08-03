@@ -15,8 +15,7 @@ public class DiscardPileUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
-        Services.EventManager.Register<DeckReshuffled>(OnDeckReshuffled);
+        Services.EventManager.Register<StartCardAnimation>(OnCardAnimationStarted);
         frameTransform = frame;
     }
 
@@ -26,6 +25,17 @@ public class DiscardPileUI : MonoBehaviour
         ReshuffleCountDown();
     }
 
+    public void OnCardAnimationStarted(StartCardAnimation e)
+    {
+        if (e.cardEvent is DeckReshuffled)
+        {
+            OnDeckReshuffled(e.cardEvent as DeckReshuffled);
+        }
+        else if (e.cardEvent is CardDiscarded)
+        {
+            OnCardDiscarded(e.cardEvent as CardDiscarded);
+        }
+    }
 
     public void OnDeckReshuffled(DeckReshuffled e)
     {

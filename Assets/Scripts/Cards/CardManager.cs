@@ -89,14 +89,12 @@ public class CardManager
 
     public void DrawNewHand()
     {
-        Services.EventManager.Fire(new CardEventQueued(new CardAnimationPause(0.01f)));
         int newHandSize = Mathf.Min(maxStartingCards, hand.Count + marginalCardsPerTurn);
         foreach (Card card in hand)
         {
             DiscardCard(card);
         }
         hand.Clear();
-        Services.EventManager.Fire(new CardEventQueued(new CardAnimationPause(0.5f)));
         for (int i = 0; i < newHandSize; i++)
         {
             DrawCard();

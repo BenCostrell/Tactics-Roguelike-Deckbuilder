@@ -16,8 +16,7 @@ public class DeckCountUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Services.EventManager.Register<CardDrawn>(OnCardDrawn);
-        Services.EventManager.Register<DeckReshuffled>(OnDeckReshuffled);
+        Services.EventManager.Register<StartCardAnimation>(OnCardAnimationStarted);
         frameTransform = frame;
     }
 
@@ -25,6 +24,18 @@ public class DeckCountUI : MonoBehaviour
     void Update()
     {
         ReshuffleCountUp();
+    }
+
+    public void OnCardAnimationStarted(StartCardAnimation e)
+    {
+        if(e.cardEvent is DeckReshuffled)
+        {
+            OnDeckReshuffled(e.cardEvent as DeckReshuffled);
+        }
+        else if(e.cardEvent is CardDrawn)
+        {
+            OnCardDrawn(e.cardEvent as CardDrawn);
+        }
     }
 
     public void OnDeckReshuffled(DeckReshuffled e)
@@ -42,10 +53,10 @@ public class DeckCountUI : MonoBehaviour
             count = Mathf.RoundToInt(Mathf.Lerp(targetCount, 0,
                 EasingEquations.Easing.Linear(deckReshuffledTimeRemaining / deckReshuffledCountUpTime)));
             countText.text = count.ToString();
-            if (deckReshuffledTimeRemaining <= 0)
-            {
-                Services.EventManager.Fire(new CardAnimationComplete());
-            }
+            //if (deckReshuffledTimeRemaining <= 0)
+            //{
+            //    Services.EventManager.Fire(new CardAnimationComplete());
+            //}
         }
     }
 

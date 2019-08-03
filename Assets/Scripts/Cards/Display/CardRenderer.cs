@@ -18,6 +18,13 @@ public class CardRenderer : MonoBehaviour
     private Vector3 baseScale;
     private const float hoverScaleFactor = 1.2f;
     private const float hoverHeight = 0.3f;
+    public bool animating
+    {
+        get
+        {
+            return stateMachine.currentState is Animating;
+        }
+    }
 
 
     public void Init(Card card, Transform cardHolder)
@@ -97,32 +104,55 @@ public class CardRenderer : MonoBehaviour
     }
 }
 
-public class CardState : StateMachine<CardRenderer>.State { }
+public abstract class CardState : StateMachine<CardRenderer>.State { }
 
-public class Inactive : CardState
+public class Inactive : WaitingToAnimate
 {
     public override void OnEnter()
     {
         base.OnEnter();
         Context.displayHolder.SetActive(false);
-        Services.EventManager.Register<CardDrawn>(OnCardDrawn);
     }
 
-    public void OnCardDrawn(CardDrawn e)
+    public override void OnAnimationStart(StartCardAnimation e)
     {
-        if (e.card.id != Context.id) return;
+        base.OnAnimationStart(e);
+        if (e.id != Context.id) return;
         TransitionTo<BeingDrawn>();
+        Debug.Log("card " + e.id + " being drawn");
     }
 
     public override void OnExit()
     {
         base.OnExit();
         Context.displayHolder.SetActive(true);
-        Services.EventManager.Unregister<CardDrawn>(OnCardDrawn);
     }
 }
 
-public class BeingDrawn : CardState
+public abstract class Animating : CardState { }
+
+public abstract class WaitingToAnimate : CardState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<StartCardAnimation>(OnAnimationStart);
+        //Debug.Log("waiting to animate");
+    }
+
+    public virtual void OnAnimationStart(StartCardAnimation e)
+    {
+        if (e.id != Context.id) return;
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<StartCardAnimation>(OnAnimationStart);
+    }
+}
+
+public class BeingDrawn : Animating
 {
     private const float drawAnimationDuration = 0.3f;
     private const float staggerTime = 0.1f;
@@ -143,6 +173,7 @@ public class BeingDrawn : CardState
         startPos = Context.transform.localPosition;
         Context.transform.localScale = Vector3.one;
         timeElapsed = 0;
+        staggerFired = false;
     }
 
     public override void Update()
@@ -208,24 +239,13 @@ public abstract class InHand : CardState
     }
 }
 
-public class WaitingToBeDiscarded : CardState
+public class WaitingToBeDiscarded : WaitingToAnimate
 {
-    public override void OnEnter()
+    public override void OnAnimationStart(StartCardAnimation e)
     {
-        base.OnEnter();
-        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
-    }
-
-    public void OnCardDiscarded(CardDiscarded e)
-    {
-        if (e.card.id != Context.id) return;
+        base.OnAnimationStart(e);
+        if (e.id != Context.id) return;
         TransitionTo<BeingDiscarded>();
-    }
-
-    public override void OnExit()
-    {
-        base.OnExit();
-        Services.EventManager.Unregister<CardDiscarded>(OnCardDiscarded);
     }
 }
 
@@ -262,7 +282,7 @@ public class Hovered : InHand
     }
 }
 
-public class BeingDiscarded : CardState
+public class BeingDiscarded : Animating
 {
     private const float discardAnimationDuration = 0.3f;
     private const float staggerTime = 0.1f;
@@ -309,6 +329,17 @@ public class BeingDiscarded : CardState
     {
         base.OnExit();
         Context.transform.parent = cardHolder;
+    }
+}
+
+public class StartCardAnimation : GameEvent
+{
+    public CardEvent cardEvent;
+    public readonly int id;
+    public StartCardAnimation(CardEvent cardEvent_, int id_)
+    {
+        cardEvent = cardEvent_;
+        id = id_;
     }
 }
 
