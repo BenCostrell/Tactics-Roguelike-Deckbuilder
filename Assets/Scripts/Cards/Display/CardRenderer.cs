@@ -9,6 +9,7 @@ public class CardRenderer : MonoBehaviour
     public TextMeshPro cardName;
     public TextMeshPro cardText;
     public GameObject displayHolder;
+    public DottedLine targetLine;
     public int id { get; private set; }
     private StateMachine<CardRenderer> stateMachine;
     private static Vector3 handBasePos = new Vector3(0, -4f,0);
@@ -37,6 +38,7 @@ public class CardRenderer : MonoBehaviour
         stateMachine.InitializeState<Inactive>();
         transform.parent = cardHolder;
         baseScale = transform.localScale;
+        targetLine.gameObject.SetActive(false);
     }
 
     // Use this for initialization
@@ -106,6 +108,20 @@ public class CardRenderer : MonoBehaviour
     public void SetAnimationSortingStatus(bool top)
     {
         sortingGroup.sortingLayerName = top ? "TopUI" : "UI";
+    }
+
+
+    public void SetArrowStatus(bool status, Vector3 start, Vector3 target)
+    {
+        targetLine.gameObject.SetActive(status);
+        targetLine.SetTarget(start, target);
+        foreach(Transform child in displayHolder.GetComponentInChildren<Transform>())
+        {
+            if(child.gameObject != displayHolder && child.gameObject != cardImage.gameObject)
+            {
+                child.gameObject.SetActive(!status);
+            }
+        }
     }
 }
 
@@ -302,6 +318,8 @@ public class Hovered : InHand
 
 public class Selected : InHand
 {
+    private const float maxY = -2f;
+
     public override void OnEnter()
     {
         base.OnEnter();
@@ -312,7 +330,18 @@ public class Selected : InHand
     public void OnDrag(CardRendererDrag e)
     {
         if (e.id != Context.id) return;
-        Context.transform.position = new Vector3(e.worldPos.x, e.worldPos.y, 0f);
+        float y = Mathf.Min(e.worldPos.y, maxY);
+        bool floatStop = e.worldPos.y >= maxY;
+        float x = floatStop ? Context.transform.position.x : e.worldPos.x;
+        Context.transform.position = new Vector3(x, y, 0f);
+        if (floatStop)
+        {
+            Context.SetArrowStatus(true, Context.transform.position, new Vector3(e.worldPos.x, e.worldPos.y, 0));
+        }
+        else
+        {
+            Context.SetArrowStatus(false, Vector3.zero, Vector3.zero);
+        }
     }
 
     public void OnInputUp(InputUp e)
@@ -324,6 +353,7 @@ public class Selected : InHand
     {
         base.OnExit();
         Context.SetAnimationSortingStatus(false);
+        Context.SetArrowStatus(false, Vector3.zero, Vector3.zero);
         Services.EventManager.Unregister<CardRendererDrag>(OnDrag);
         Services.EventManager.Unregister<InputUp>(OnInputUp);
     }
