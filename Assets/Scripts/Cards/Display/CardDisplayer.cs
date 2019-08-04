@@ -32,7 +32,7 @@ public class CardDisplayer
     private void QueueCardEvent(CardEventQueued e)
     {
         animationQueue.Enqueue(e);
-        Debug.Log("queuing " + e.cardEvent.GetType());
+        //Debug.Log("queuing " + e.cardEvent.GetType());
     }
 
     public void Update()
@@ -66,7 +66,7 @@ public class CardDisplayer
                 framePause = true;
                 Services.EventManager.Fire(new StartCardAnimation(queuedCardEvent.cardEvent,
                     queuedCardEvent.id));
-                Debug.Log("firing " + queuedCardEvent.cardEvent.GetType() + " at time " +Time.time);
+                //Debug.Log("firing " + queuedCardEvent.cardEvent.GetType() + " at time " +Time.time);
             }
         }
     }

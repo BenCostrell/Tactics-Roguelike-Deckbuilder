@@ -13,6 +13,7 @@ public class CardRenderer : MonoBehaviour
     private StateMachine<CardRenderer> stateMachine;
     private static Vector3 handBasePos = new Vector3(0, -4f,0);
     private static Vector3 handSpacing = new Vector3(1.25f, -0.1f, 0.1f);
+    public static Vector3 handScale = new Vector3(1.5f, 1.5f, 1.0f);
     private const float handSpreadAngle = 2.5f;
     public SortingGroup sortingGroup;
     private Vector3 baseScale;
@@ -25,7 +26,6 @@ public class CardRenderer : MonoBehaviour
             return stateMachine.currentState is Animating;
         }
     }
-
 
     public void Init(Card card, Transform cardHolder)
     {
@@ -102,9 +102,16 @@ public class CardRenderer : MonoBehaviour
             SetHandPos();
         }
     }
+
+    public void SetAnimationSortingStatus(bool top)
+    {
+        sortingGroup.sortingLayerName = top ? "TopUI" : "UI";
+    }
 }
 
-public abstract class CardState : StateMachine<CardRenderer>.State { }
+public abstract class CardState : StateMachine<CardRenderer>.State {
+
+}
 
 public class Inactive : WaitingToAnimate
 {
@@ -119,7 +126,7 @@ public class Inactive : WaitingToAnimate
         base.OnAnimationStart(e);
         if (e.id != Context.id) return;
         TransitionTo<BeingDrawn>();
-        Debug.Log("card " + e.id + " being drawn");
+        //Debug.Log("card " + e.id + " being drawn");
     }
 
     public override void OnExit()
@@ -154,8 +161,8 @@ public abstract class WaitingToAnimate : CardState
 
 public class BeingDrawn : Animating
 {
-    private const float drawAnimationDuration = 0.3f;
-    private const float staggerTime = 0.1f;
+    private const float drawAnimationDuration = 0.4f;
+    private const float staggerTime = 0.15f;
     private float timeElapsed;
     private Vector3 targetScale;
     private Vector3 targetPos;
@@ -166,7 +173,7 @@ public class BeingDrawn : Animating
     public override void OnEnter()
     {
         base.OnEnter();
-        targetScale = Context.transform.localScale;
+        targetScale = CardRenderer.handScale;
         targetRot = Context.GetHandRot();
         targetPos = Context.GetHandPos();
         Context.transform.position = DeckCountUI.frameTransform.position;
@@ -174,6 +181,7 @@ public class BeingDrawn : Animating
         Context.transform.localScale = Vector3.one;
         timeElapsed = 0;
         staggerFired = false;
+        Context.SetAnimationSortingStatus(true);
     }
 
     public override void Update()
@@ -200,6 +208,7 @@ public class BeingDrawn : Animating
     public override void OnExit()
     {
         base.OnExit();
+        Context.SetAnimationSortingStatus(false);
         Context.SetHandPos();
     }
 }
@@ -219,10 +228,6 @@ public abstract class InHand : CardState
         if(e.cardEvent is CardDiscarded)
         {
             TransitionTo<WaitingToBeDiscarded>();
-        }
-        else if(e.cardEvent is CardCast)
-        {
-            TransitionTo<Inactive>();
         }
     }
 
@@ -271,6 +276,7 @@ public class Hovered : InHand
     {
         base.OnEnter();
         Context.SetHoverStatus(true);
+        Services.EventManager.Register<CardRendererSelected>(OnSelected);
     }
 
     public override void OnCardRendererHover(CardRendererHover e)
@@ -280,12 +286,53 @@ public class Hovered : InHand
             TransitionTo<Unhovered>();
         }
     }
+
+    public void OnSelected(CardRendererSelected e)
+    {
+        if (e.id != Context.id) return;
+        TransitionTo<Selected>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<CardRendererSelected>(OnSelected);
+    }
+}
+
+public class Selected : InHand
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Context.SetAnimationSortingStatus(true);
+        Services.EventManager.Register<CardRendererDrag>(OnDrag);
+        Services.EventManager.Register<InputUp>(OnInputUp);
+    }
+    public void OnDrag(CardRendererDrag e)
+    {
+        if (e.id != Context.id) return;
+        Context.transform.position = new Vector3(e.worldPos.x, e.worldPos.y, 0f);
+    }
+
+    public void OnInputUp(InputUp e)
+    {
+        TransitionTo<Unhovered>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Context.SetAnimationSortingStatus(false);
+        Services.EventManager.Unregister<CardRendererDrag>(OnDrag);
+        Services.EventManager.Unregister<InputUp>(OnInputUp);
+    }
 }
 
 public class BeingDiscarded : Animating
 {
-    private const float discardAnimationDuration = 0.3f;
-    private const float staggerTime = 0.1f;
+    private const float discardAnimationDuration = 0.5f;
+    private const float staggerTime = 0.2f;
     private bool staggerFired;
     private float timeElapsed;
     private Vector3 startScale;

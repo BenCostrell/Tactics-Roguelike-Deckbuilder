@@ -55,15 +55,15 @@ public class CardManager
 
     public void DrawCard()
     {
-        Debug.Log("drawing from deck of size " + currentDeck.Count);
+        //Debug.Log("drawing from deck of size " + currentDeck.Count);
         if (currentDeck.Count == 0)
         {
             currentDeck = new List<Card>(discardPile);
             DeckReshuffled deckReshuffledEvent = new DeckReshuffled(currentDeck.Count);
             Services.EventManager.Fire(new CardEventQueued(deckReshuffledEvent, -1));
             discardPile.Clear();
-            Debug.Log("deck count: " + currentDeck.Count);
-            Debug.Log("discard count: " + discardPile.Count);
+            //Debug.Log("deck count: " + currentDeck.Count);
+            //Debug.Log("discard count: " + discardPile.Count);
         }
         if (currentDeck.Count == 0)
         {
