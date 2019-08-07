@@ -8,6 +8,7 @@ public class CardRenderer : MonoBehaviour
     public SpriteRenderer cardFrame;
     public TextMeshPro cardName;
     public TextMeshPro cardText;
+    public TextMeshPro costText;
     public GameObject displayHolder;
     public DottedLine targetLine;
     public int id { get; private set; }
@@ -34,6 +35,7 @@ public class CardRenderer : MonoBehaviour
         cardImage.sprite = card.data.sprite;
         cardName.text = card.data.name;
         cardText.text = card.data.text;
+        costText.text = card.data.cost.ToString();
         stateMachine = new StateMachine<CardRenderer>(this);
         stateMachine.InitializeState<Inactive>();
         transform.parent = cardHolder;
@@ -326,6 +328,7 @@ public class Selected : InHand
         Context.SetAnimationSortingStatus(true);
         Services.EventManager.Register<CardRendererDrag>(OnDrag);
         Services.EventManager.Register<InputUp>(OnInputUp);
+        Services.EventManager.Register<InputDown>(OnInputDown);
     }
     public void OnDrag(CardRendererDrag e)
     {
@@ -346,7 +349,16 @@ public class Selected : InHand
 
     public void OnInputUp(InputUp e)
     {
+        if (e.withinClickWindow) return;
         TransitionTo<Unhovered>();
+    }
+
+    public void OnInputDown(InputDown e)
+    {
+        if (e.buttonNum == 1)
+        {
+            TransitionTo<Unhovered>();
+        }
     }
 
     public override void OnExit()
@@ -356,6 +368,7 @@ public class Selected : InHand
         Context.SetArrowStatus(false, Vector3.zero, Vector3.zero);
         Services.EventManager.Unregister<CardRendererDrag>(OnDrag);
         Services.EventManager.Unregister<InputUp>(OnInputUp);
+        Services.EventManager.Unregister<InputDown>(OnInputDown);
     }
 }
 

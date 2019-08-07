@@ -4,26 +4,38 @@ using UnityEngine;
 
 public class InputManager : MonoBehaviour
 {
+    private const float cardClickWindow = 0.1f;
+    private float clickWindowCountdown;
+    private int selectedRendererID;
+    private bool clickSelected;
+
     // Start is called before the first frame update
     void Start()
     {
         selectedRendererID = -1;
+        clickSelected = false;
+        clickWindowCountdown = 0;
     }
 
-    private int selectedRendererID;
 
     // Update is called once per frame
     void Update()
     {
+        if (clickWindowCountdown > 0)
+        {
+            clickWindowCountdown -= Time.deltaTime;
+        }
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Services.EventManager.Fire(new InputHover(mousePos));
         if (Input.GetMouseButtonDown(0))
         {
-            Services.EventManager.Fire(new InputDown(mousePos));
+            Services.EventManager.Fire(new InputDown(mousePos, 0));
+            clickSelected = false;
         }
-        if (!Input.GetMouseButton(0))
+        if (Input.GetMouseButtonDown(1))
         {
-            selectedRendererID = -1;
+            Services.EventManager.Fire(new InputDown(mousePos, 1));
+            clickSelected = false;
         }
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -33,7 +45,15 @@ public class InputManager : MonoBehaviour
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Input.GetMouseButtonUp(0))
         {
-            Services.EventManager.Fire(new InputUp(mouseWorldPos));
+            if (selectedRendererID != -1 && clickWindowCountdown > 0)
+            {
+                clickSelected = true;
+            }
+            Services.EventManager.Fire(new InputUp(mouseWorldPos, clickWindowCountdown > 0));
+        }
+        if (!Input.GetMouseButton(0) && !clickSelected)
+        {
+            selectedRendererID = -1;
         }
         if (hit.collider != null)
         {
@@ -42,6 +62,7 @@ public class InputManager : MonoBehaviour
             {
                 selectedRendererID = id;
                 Services.EventManager.Fire(new CardRendererSelected(id, mouseWorldPos));
+                clickWindowCountdown = cardClickWindow;
             }
         }
         if (selectedRendererID == -1)
@@ -68,10 +89,12 @@ public class InputHover : GameEvent
 public class InputDown : GameEvent
 {
     public readonly Vector2 worldPos;
+    public readonly int buttonNum;
 
-    public InputDown(Vector2 worldPos_)
+    public InputDown(Vector2 worldPos_, int buttonNum_)
     {
         worldPos = worldPos_;
+        buttonNum = buttonNum_;
     }
 }
 
@@ -100,9 +123,11 @@ public class CardRendererDrag : GameEvent
 public class InputUp : GameEvent
 {
     public readonly Vector2 worldPos;
-    public InputUp(Vector2 worldPos_)
+    public readonly bool withinClickWindow;
+    public InputUp(Vector2 worldPos_, bool withinClickWindow_)
     {
         worldPos = worldPos_;
+        withinClickWindow = withinClickWindow_;
     }
 }
 
