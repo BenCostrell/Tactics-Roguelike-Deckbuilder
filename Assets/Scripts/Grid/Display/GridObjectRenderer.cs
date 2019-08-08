@@ -8,25 +8,31 @@ public class GridObjectRenderer : MonoBehaviour
     public int id { get; private set; }
     private Coroutine movementCoroutine;
     private Coroutine attackCoroutine;
+    private Coroutine deathCoroutine;
     private const float moveTimePerTile = 0.2f;
     private const float preAttackWait = 0.3f;
     private const float attackAnimationExtendDuration = 0.3f;
     private const float attackAnimationRetractDuration = 0.075f;
     private const float attackDistance = 0.3f;
+    private const float deathAnimWhiteoutDuration = 0.2f;
+    private const float deathAnimFadeoutDuration = 0.4f;
     public bool animating { get; private set; }
-    private HealthBar healthBarSr;
+    public HealthBar healthBar;
+    public SpriteMask whiteoutMask;
+    public SpriteRenderer whiteoutSr;
 
-    public void Initialize(GridObject gridObject, MapTile mapTile, Transform mapHolder)
+    public void Initialize(GridObject gridObject, MapTile mapTile)
     {
-        sr = gameObject.AddComponent<SpriteRenderer>();
+        sr = GetComponent<SpriteRenderer>();
         sr.sprite = gridObject.data.sprite;
-        sr.sortingLayerName = "Objects";
         id = gridObject.id;
         gameObject.name = gridObject.data.gridObjectName;
-        transform.parent = mapHolder;
         transform.localPosition = new Vector2(mapTile.coord.x, mapTile.coord.y);
-        healthBarSr = new GameObject().AddComponent<HealthBar>();
-        healthBarSr.Initialize(this, gridObject);
+        healthBar.Initialize(gridObject);
+        whiteoutMask.sprite = sr.sprite;
+        whiteoutSr.enabled = false;
+        whiteoutMask.enabled = false;
+        Services.EventManager.Register<GridObjectDeath>(OnDeath);
     }
 
     public void MoveToTile(GridObjectMoved e)
@@ -37,6 +43,45 @@ public class GridObjectRenderer : MonoBehaviour
     public void Attack(ObjectAttacked e)
     {
         attackCoroutine = StartCoroutine(AttackCoroutine(e));
+    }
+
+    public void OnDeath(GridObjectDeath e)
+    {
+        if (e.id != id) return;
+        deathCoroutine = StartCoroutine(DeathCoroutine());
+    }
+
+    IEnumerator DeathCoroutine()
+    {
+        while (!healthBar.doneAnimating)
+        {
+            yield return null;
+        }
+        animating = true;
+        float timeElapsed = 0;
+        whiteoutMask.enabled = true;
+        whiteoutSr.enabled = true;
+        whiteoutSr.color = new Color(1, 1, 1, 0);
+        while(timeElapsed <= deathAnimFadeoutDuration + deathAnimWhiteoutDuration)
+        {
+            timeElapsed += Time.deltaTime;
+            if(timeElapsed <= deathAnimWhiteoutDuration)
+            {
+                whiteoutSr.color = Color.Lerp(new Color(1, 1, 1, 0), Color.white,
+                    EasingEquations.Easing.QuadEaseOut(timeElapsed / deathAnimWhiteoutDuration));
+            }
+            else
+            {
+                float alpha = Mathf.Lerp(1,0,EasingEquations.Easing.QuadEaseOut(
+                    (timeElapsed - deathAnimWhiteoutDuration)/deathAnimFadeoutDuration));
+                whiteoutSr.color = new Color(1, 1, 1, alpha);
+                sr.color = new Color(1, 1, 1, alpha);
+                healthBar.FadeColor(alpha);
+            }
+            yield return null;
+        }
+        animating = false;
+        Destroy(gameObject);
     }
 
     IEnumerator AttackCoroutine(ObjectAttacked e)

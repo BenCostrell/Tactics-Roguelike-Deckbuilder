@@ -76,19 +76,16 @@ public class GridObject
     public void TakeDamage(int damage)
     {
         int prevHealth = currentHealth;
-        currentHealth -= damage;
-        if(currentHealth <= 0)
-        {
-            currentHealth = 0;
-            Die();
-        }
+        currentHealth = Mathf.Max(0, currentHealth - damage);
         int damageTaken = prevHealth - currentHealth;
         Services.EventManager.Fire(new DamageTaken(this, damageTaken));
+        if (currentHealth == 0) Die();
     }
 
     public void Die()
     {
-
+        currentTile.OnObjectExit(this);
+        Services.EventManager.Fire(new GridObjectDeath(id));
     }
 }
 
@@ -130,3 +127,11 @@ public class DamageTaken : GameEvent
     }
 }
 
+public class GridObjectDeath : GameEvent
+{
+    public readonly int id;
+    public GridObjectDeath(int id_)
+    {
+        id = id_;
+    }
+}

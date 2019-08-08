@@ -6,50 +6,53 @@ using UnityEngine.U2D;
 public class HealthBar : MonoBehaviour
 {
     private int id;
-    private SpriteRenderer frontBar;
-    private SpriteRenderer backBar;
-    private SpriteRenderer animatedBar;
-    private readonly Vector2 offset = new Vector2(-0.25f, 0.5f);
+    public SpriteRenderer frontBar;
+    public SpriteRenderer backBar;
+    public SpriteRenderer animatedBar;
+    //private readonly Vector2 offset = new Vector2(-0.25f, 0.5f);
     private float animTimeRemaining;
     private const float damageAnimDuration = 0.25f;
     private float damageDistance;
     private float healthProportion;
     private Queue<HealthChangeAnimation> animQueue;
+    private List<SpriteRenderer> srs;
+    public bool doneAnimating { get { return animQueue.Count == 0 && animTimeRemaining <= 0; } }
 
-    public void Initialize(GridObjectRenderer gridObjectRenderer, GridObject gridObject)
+    public void Initialize(GridObject gridObject)
     {
-        gameObject.name = "Health Bar";
+        //gameObject.name = "Health Bar";
         id = gridObject.id;
-        transform.parent = gridObjectRenderer.transform;
-        List<SpriteRenderer> spriteRenderers = new List<SpriteRenderer>();
-        transform.localPosition = offset;
+        srs = new List<SpriteRenderer>() { frontBar, backBar, animatedBar };
+        //transform.parent = gridObjectRenderer.transform;
+        //List<SpriteRenderer> spriteRenderers = new List<SpriteRenderer>();
+        //transform.localPosition = offset;
 
-        frontBar = new GameObject().AddComponent<SpriteRenderer>();
-        frontBar.gameObject.name = "Front Bar";
-        spriteRenderers.Add(frontBar);
-        frontBar.sortingOrder = 2;
-        frontBar.color = Color.green;
+        //frontBar = new GameObject().AddComponent<SpriteRenderer>();
+        //frontBar.gameObject.name = "Front Bar";
+        //spriteRenderers.Add(frontBar);
+        //frontBar.sortingOrder = 2;
+        //frontBar.color = Color.green;
 
-        backBar = new GameObject().AddComponent<SpriteRenderer>();
-        backBar.gameObject.name = "Back Bar";
-        spriteRenderers.Add(backBar);
-        backBar.sortingOrder = 0;
-        backBar.color = Color.red;
+        //backBar = new GameObject().AddComponent<SpriteRenderer>();
+        //backBar.gameObject.name = "Back Bar";
+        //spriteRenderers.Add(backBar);
+        //backBar.sortingOrder = 0;
+        //backBar.color = Color.red;
 
-        animatedBar = new GameObject().AddComponent<SpriteRenderer>();
-        animatedBar.gameObject.name = "Animated Bar";
-        spriteRenderers.Add(animatedBar);
-        animatedBar.sortingOrder = 1;
-        animatedBar.color = Color.yellow;
-        animatedBar.transform.localScale = new Vector3(0, 1, 1);
+        //animatedBar = new GameObject().AddComponent<SpriteRenderer>();
+        //animatedBar.gameObject.name = "Animated Bar";
+        //spriteRenderers.Add(animatedBar);
+        //animatedBar.sortingOrder = 1;
+        //animatedBar.color = Color.yellow;
+        //animatedBar.transform.localScale = new Vector3(0, 1, 1);
 
-        foreach(SpriteRenderer sr in spriteRenderers)
-        {
-            sr.sortingLayerName = "UI";
-            sr.sprite = Resources.Load<SpriteAtlas>("SpriteData/UiAtlas").GetSprite("bar");
-            sr.transform.parent = transform;
-            sr.transform.localPosition = Vector3.zero;
-        }
+        //foreach(SpriteRenderer sr in spriteRenderers)
+        //{
+        //    sr.sortingLayerName = "UI";
+        //    sr.sprite = Resources.Load<SpriteAtlas>("SpriteData/UiAtlas").GetSprite("bar");
+        //    sr.transform.parent = transform;
+        //    sr.transform.localPosition = Vector3.zero;
+        //}
         animQueue = new Queue<HealthChangeAnimation>();
 
         Services.EventManager.Register<DamageTaken>(OnDamageTaken);
@@ -104,6 +107,14 @@ public class HealthBar : MonoBehaviour
             damage = damage_;
             health = health_;
             maxHealth = maxHealth_;
+        }
+    }
+
+    public void FadeColor(float alpha)
+    {
+        foreach(SpriteRenderer sr in srs)
+        {
+            sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, alpha);
         }
     }
 }

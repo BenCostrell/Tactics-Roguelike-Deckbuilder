@@ -13,9 +13,11 @@ public class MapDisplayer
     private Reticle reticle;
     private Queue<GameEvent> animationQueue;
     private bool wasAnimating;
+    private GridObjectRenderer gridObjectRendererPrefab;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
+        gridObjectRendererPrefab = Resources.Load<GridObjectRenderer>("Prefabs/GridObjectRenderer");
         mapHolder = new GameObject("MapHolder").transform;
         int width = map.GetLength(0);
         int height = map.GetLength(1);
@@ -57,8 +59,9 @@ public class MapDisplayer
 
     public void OnGridObjectSpawned(GridObjectSpawned e)
     {
-        GridObjectRenderer gridObjectRenderer = new GameObject().AddComponent<GridObjectRenderer>();
-        gridObjectRenderer.Initialize(e.gridObject, e.mapTile, mapHolder);
+        GridObjectRenderer gridObjectRenderer = GameObject.Instantiate(gridObjectRendererPrefab, 
+            mapHolder).GetComponent<GridObjectRenderer>();
+        gridObjectRenderer.Initialize(e.gridObject, e.mapTile);
         gridObjectRenderers[e.gridObject.id] = gridObjectRenderer;
     }
 

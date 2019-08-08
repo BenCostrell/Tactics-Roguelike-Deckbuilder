@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CardAttack : CardEffect
 {
@@ -13,7 +14,8 @@ public class CardAttack : CardEffect
     public override void Execute(MapTile target)
     {
         base.Execute(target);
-        foreach(GridObject gridObject in target.containedObjects)
+        List<GridObject> tileObjects = new List<GridObject>(target.containedObjects);
+        foreach(GridObject gridObject in tileObjects)
         {
             gridObject.TakeDamage(damage);
             // for now, no animation

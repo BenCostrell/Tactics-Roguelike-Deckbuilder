@@ -25,6 +25,7 @@ public class MapManager
         InitializeMap(width, height);
         _enemyTurnManager = new EnemyTurnManager();
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnd);
+        Services.EventManager.Register<GridObjectDeath>(OnGridObjectDeath);
     }
 
     public void Update()
@@ -107,6 +108,11 @@ public class MapManager
     public void OnPlayerTurnEnd(PlayerTurnEnded e)
     {
         _enemyTurnManager.ExecuteEnemyTurn(gridObjectList);
+    }
+
+    public void OnGridObjectDeath(GridObjectDeath e)
+    {
+        _gridObjects.Remove(e.id);
     }
 }
 
