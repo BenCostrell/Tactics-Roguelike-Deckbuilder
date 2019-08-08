@@ -39,7 +39,7 @@ public class MapManager
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
         SpawnEnemies();
-        Services.EventManager.Register<InputDown>(OnInputDown);
+        //Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
         _mapDisplayer.InitializeMapDisplay(map);
     }
@@ -95,7 +95,7 @@ public class MapManager
         Coord coord = new Coord(Mathf.RoundToInt(mouseLocalPos.x), Mathf.RoundToInt(mouseLocalPos.y));
         if (IsCoordInMap(coord))
         {
-            Services.EventManager.Fire(new MapTileSelected(map[coord.x, coord.y]));
+            Services.EventManager.Fire(new MapTileSelected(map[coord.x, coord.y], e.selectedCardId));
         }
     }
 
@@ -113,9 +113,11 @@ public class MapManager
 public class MapTileSelected : GameEvent
 {
     public readonly MapTile mapTile;
+    public readonly int selectedCardId;
 
-    public MapTileSelected(MapTile mapTile_)
+    public MapTileSelected(MapTile mapTile_, int selectedCardId_)
     {
         mapTile = mapTile_;
+        selectedCardId = selectedCardId_;
     }
 }

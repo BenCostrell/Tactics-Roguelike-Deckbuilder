@@ -5,6 +5,7 @@ public class TileRenderer : MonoBehaviour
 {
     private SpriteRenderer sr;
     private MapTile tile;
+    private BoxCollider2D col;
 
     public void Init(MapTile tile_, Transform mapHolder)
     {
@@ -15,20 +16,26 @@ public class TileRenderer : MonoBehaviour
         sr.sortingLayerName = "Map";
         transform.parent = mapHolder;
         transform.localPosition = new Vector3(tile.coord.x, tile.coord.y, 0);
-        Services.EventManager.Register<InputHover>(CheckHover);
+        col = gameObject.AddComponent<BoxCollider2D>();
+        //Services.EventManager.Register<InputHover>(CheckHover);
     }
 
-    public void CheckHover(InputHover e)
-    {
-        if (sr.bounds.Contains(e.worldPos))
-        {
-            OnHover();
-        }
-    }
+    //public void CheckHover(InputHover e)
+    //{
+    //    if (sr.bounds.Contains(e.worldPos))
+    //    {
+    //        OnHover();
+    //    }
+    //}
 
-    private void OnHover()
+    public void OnHover()
     {
         Services.EventManager.Fire(new TileHovered(tile));
+    }
+
+    public void OnSelected(int cardSelectedId)
+    {
+        Services.EventManager.Fire(new MapTileSelected(tile, cardSelectedId));
     }
 
     // Update is called once per frame

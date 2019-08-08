@@ -8,6 +8,7 @@ public class InputManager : MonoBehaviour
     private float clickWindowCountdown;
     private int selectedRendererID;
     private bool clickSelected;
+    private TileRenderer hoveredTile;
 
     // Start is called before the first frame update
     void Start()
@@ -15,6 +16,7 @@ public class InputManager : MonoBehaviour
         selectedRendererID = -1;
         clickSelected = false;
         clickWindowCountdown = 0;
+        hoveredTile = null;
     }
 
 
@@ -26,16 +28,14 @@ public class InputManager : MonoBehaviour
             clickWindowCountdown -= Time.deltaTime;
         }
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Services.EventManager.Fire(new InputHover(mousePos));
-        if (Input.GetMouseButtonDown(0))
+        //Services.EventManager.Fire(new InputHover(mousePos));
+        for (int i = 0; i < 2; i++)
         {
-            Services.EventManager.Fire(new InputDown(mousePos, 0));
-            clickSelected = false;
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-            Services.EventManager.Fire(new InputDown(mousePos, 1));
-            clickSelected = false;
+            if (Input.GetMouseButtonDown(i))
+            {
+                Services.EventManager.Fire(new InputDown(mousePos, i, selectedRendererID));
+                clickSelected = false;
+            }
         }
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -51,20 +51,44 @@ public class InputManager : MonoBehaviour
             }
             Services.EventManager.Fire(new InputUp(mouseWorldPos, clickWindowCountdown > 0));
         }
+
+        if (hit.collider != null)
+        {
+            CardRenderer cardRendererHit = hit.transform.GetComponentInParent<CardRenderer>();
+            if (cardRendererHit != null)
+            {
+                id = hit.transform.GetComponentInParent<CardRenderer>().id;
+                if (Input.GetMouseButtonDown(0))
+                {
+                    selectedRendererID = id;
+                    Services.EventManager.Fire(new CardRendererSelected(id, mouseWorldPos));
+                    clickWindowCountdown = cardClickWindow;
+                }
+            }
+            TileRenderer tileRendererHit = hit.transform.GetComponent<TileRenderer>();
+            if(tileRendererHit != null)
+            {
+                tileRendererHit.OnHover();
+                hoveredTile = tileRendererHit;
+                if (Input.GetMouseButtonDown(0))
+                {
+                    hoveredTile.OnSelected(selectedRendererID);
+                }
+                if (Input.GetMouseButtonUp(0) && selectedRendererID != -1)
+                {
+                    hoveredTile.OnSelected(selectedRendererID);
+                }
+            }
+            else if (hit.transform.gameObject.CompareTag("Background"))
+            {
+                Services.EventManager.Fire(new TileHovered(null));
+            }
+        }
         if (!Input.GetMouseButton(0) && !clickSelected)
         {
             selectedRendererID = -1;
         }
-        if (hit.collider != null)
-        {
-            id = hit.transform.GetComponentInParent<CardRenderer>().id;
-            if (Input.GetMouseButtonDown(0))
-            {
-                selectedRendererID = id;
-                Services.EventManager.Fire(new CardRendererSelected(id, mouseWorldPos));
-                clickWindowCountdown = cardClickWindow;
-            }
-        }
+
         if (selectedRendererID == -1)
         {
             Services.EventManager.Fire(new CardRendererHover(id));
@@ -90,11 +114,13 @@ public class InputDown : GameEvent
 {
     public readonly Vector2 worldPos;
     public readonly int buttonNum;
+    public readonly int selectedCardId;
 
-    public InputDown(Vector2 worldPos_, int buttonNum_)
+    public InputDown(Vector2 worldPos_, int buttonNum_, int selectedCardId_)
     {
         worldPos = worldPos_;
         buttonNum = buttonNum_;
+        selectedCardId = selectedCardId_;
     }
 }
 

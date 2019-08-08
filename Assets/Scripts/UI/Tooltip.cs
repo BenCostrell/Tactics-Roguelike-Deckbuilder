@@ -24,7 +24,7 @@ public class Tooltip : MonoBehaviour
 
     public void OnTileHovered(TileHovered e)
     {
-        if(e.tile.containedObjects.Count > 0)
+        if (e.tile != null && e.tile.containedObjects.Count > 0)
         {
             GridObject gridObject = e.tile.containedObjects[0];
             unitImage.enabled = true;

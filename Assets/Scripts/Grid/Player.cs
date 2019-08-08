@@ -50,6 +50,7 @@ public class Player : GridObject
 
     private void OnTileSelected(MapTileSelected e)
     {
+        if (e.selectedCardId != -1) return;
         MapTile targetTile = e.mapTile;
         if (targetTile != currentTile)
         {

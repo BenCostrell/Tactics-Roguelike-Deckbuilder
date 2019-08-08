@@ -78,8 +78,8 @@ public class CardManager
 
     public void OnCardCast(CardCast e)
     {
-        hand.Remove(e.card); 
-        discardPile.Add(e.card);
+        hand.Remove(e.card);
+        DiscardCard(e.card);
     }
 
     public void OnPlayerTurnEnded(PlayerTurnEnded e)

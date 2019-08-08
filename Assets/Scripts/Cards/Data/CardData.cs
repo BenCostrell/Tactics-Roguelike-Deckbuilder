@@ -16,6 +16,18 @@ public struct CardData
         }
     }
     public readonly Sprite sprite;
+    public bool targeted
+    {
+        get
+        {
+            foreach (CardEffect cardEffect in effects)
+            {
+                if (cardEffect.targeted) return true;
+            }
+            return false;
+        }
+    }
+
 
     public CardData(string name_, int cost_, List<CardEffect> effects_, string text_, Sprite sprite_)
     {

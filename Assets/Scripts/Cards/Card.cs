@@ -37,6 +37,15 @@ public class Card
         Services.EventManager.Fire(new CardCreated(this));
     }
 
+    public bool IsTargetLegal(MapTile target)
+    {
+        foreach(CardEffect cardEffect in effects)
+        {
+            if (!cardEffect.IsTargetLegal(target)) return false;
+        }
+        return true;
+    }
+
     public void Cast(MapTile target)
     {
         Services.EventManager.Fire(new CardCast(this, target));

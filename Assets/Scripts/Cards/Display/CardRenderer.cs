@@ -11,7 +11,9 @@ public class CardRenderer : MonoBehaviour
     public TextMeshPro costText;
     public GameObject displayHolder;
     public DottedLine targetLine;
+    private BoxCollider2D col;
     public int id { get; private set; }
+    public Card card { get; private set; }
     private StateMachine<CardRenderer> stateMachine;
     private static Vector3 handBasePos = new Vector3(0, -4f,0);
     private static Vector3 handSpacing = new Vector3(1.25f, -0.1f, 0.1f);
@@ -28,14 +30,17 @@ public class CardRenderer : MonoBehaviour
             return stateMachine.currentState is Animating;
         }
     }
+    public MapTile currentTarget;
 
-    public void Init(Card card, Transform cardHolder)
+    public void Init(Card card_, Transform cardHolder)
     {
+        card = card_;
         id = card.id;
         cardImage.sprite = card.data.sprite;
         cardName.text = card.data.name;
         cardText.text = card.data.text;
         costText.text = card.data.cost.ToString();
+        col = GetComponentInChildren<BoxCollider2D>();
         stateMachine = new StateMachine<CardRenderer>(this);
         stateMachine.InitializeState<Inactive>();
         transform.parent = cardHolder;
@@ -115,6 +120,7 @@ public class CardRenderer : MonoBehaviour
 
     public void SetArrowStatus(bool status, Vector3 start, Vector3 target)
     {
+        col.enabled = !status;
         targetLine.gameObject.SetActive(status);
         targetLine.SetTarget(start, target);
         foreach(Transform child in displayHolder.GetComponentInChildren<Transform>())
@@ -321,22 +327,38 @@ public class Hovered : InHand
 public class Selected : InHand
 {
     private const float maxY = -2f;
+    private bool castThreshold;
+    private bool targeted;
 
     public override void OnEnter()
     {
         base.OnEnter();
+        targeted = Context.card.data.targeted;
+        Context.currentTarget = null;
         Context.SetAnimationSortingStatus(true);
         Services.EventManager.Register<CardRendererDrag>(OnDrag);
         Services.EventManager.Register<InputUp>(OnInputUp);
         Services.EventManager.Register<InputDown>(OnInputDown);
+        Services.EventManager.Register<MapTileSelected>(OnMapTileSelected);
     }
     public void OnDrag(CardRendererDrag e)
     {
         if (e.id != Context.id) return;
-        float y = Mathf.Min(e.worldPos.y, maxY);
-        bool floatStop = e.worldPos.y >= maxY;
+        float y;
+        if (targeted)
+        {
+            y = Mathf.Min(e.worldPos.y, maxY);
+        }
+        else
+        {
+            y = e.worldPos.y;
+        }
+        castThreshold = e.worldPos.y >= maxY;
+        bool floatStop = castThreshold && targeted;
         float x = floatStop ? Context.transform.position.x : e.worldPos.x;
         Context.transform.position = new Vector3(x, y, 0f);
+
+
         if (floatStop)
         {
             Context.SetArrowStatus(true, Context.transform.position, new Vector3(e.worldPos.x, e.worldPos.y, 0));
@@ -350,12 +372,40 @@ public class Selected : InHand
     public void OnInputUp(InputUp e)
     {
         if (e.withinClickWindow) return;
-        TransitionTo<Unhovered>();
+        if (!targeted && castThreshold)
+        {
+            TransitionTo<Casting>();
+        }
+        else
+        {
+            TransitionTo<Unhovered>();
+        }
     }
 
     public void OnInputDown(InputDown e)
     {
         if (e.buttonNum == 1)
+        {
+            if (!targeted && castThreshold)
+            {
+                TransitionTo<Casting>();
+            }
+            else
+            {
+                TransitionTo<Unhovered>();
+            }
+        }
+    }
+
+    public void OnMapTileSelected(MapTileSelected e)
+    {
+        if (e.selectedCardId != Context.id) return;
+        if (Context.card.IsTargetLegal(e.mapTile))
+        {
+            Context.currentTarget = e.mapTile;
+            TransitionTo<Casting>();
+        }
+        else
         {
             TransitionTo<Unhovered>();
         }
@@ -369,6 +419,16 @@ public class Selected : InHand
         Services.EventManager.Unregister<CardRendererDrag>(OnDrag);
         Services.EventManager.Unregister<InputUp>(OnInputUp);
         Services.EventManager.Unregister<InputDown>(OnInputDown);
+        Services.EventManager.Unregister<MapTileSelected>(OnMapTileSelected);
+    }
+}
+
+public class Casting : InHand
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Context.card.Cast(Context.currentTarget);
     }
 }
 

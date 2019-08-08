@@ -13,7 +13,7 @@ public class CardDataManager
         cardDataDict = new Dictionary<string, CardData>();
         atlas = Resources.Load<SpriteAtlas>("SpriteData/CardSprites");
         //temporary, will ultimately load in from spreadsheet
-        AddData("Whack", 1, new List<string>() { "ATTACK,1,1" }, 
+        AddData("Whack", 1, new List<string>() { "ATTACK,1,1,1" }, 
             "Deal 1 damage to a target within 1 range.");
     }
 
