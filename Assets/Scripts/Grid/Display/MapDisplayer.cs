@@ -16,6 +16,7 @@ public class MapDisplayer
     private GridObjectRenderer gridObjectRendererPrefab;
     private StateMachine<MapDisplayer> stateMachine;
     private NavArrow navArrow;
+    public Card hoveredCard;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
@@ -113,6 +114,24 @@ public class AllQueuedAnimationsComplete : GameEvent { }
 public abstract class MapDisplayState : StateMachine<MapDisplayer>.State
 {
     protected Player player { get { return Services.LevelManager.player; } }
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<CardRendererHoverStart>(OnCardHoverStart);
+    }
+
+    public void OnCardHoverStart(CardRendererHoverStart e)
+    {
+        Context.hoveredCard = e.cardRenderer.card;
+        TransitionTo<CardRange>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<CardRendererHoverStart>(OnCardHoverStart);
+    }
 }
 
 public class PlayerRange : MapDisplayState
@@ -124,6 +143,7 @@ public class PlayerRange : MapDisplayState
         Services.EventManager.Register<EnergyChanged>(OnEnergyChanged);
         Services.EventManager.Register<GridObjectMoved>(OnGridObjectMoved);
         Services.EventManager.Register<GridObjectDeath>(OnGridObjectDeath);
+        //Debug.Log("entering player range at time " + Time.time);
     }
 
     public void OnEnergyChanged(EnergyChanged e)
@@ -164,6 +184,7 @@ public class PlayerRange : MapDisplayState
         base.OnExit();
         Services.EventManager.Unregister<EnergyChanged>(OnEnergyChanged);
         Services.EventManager.Unregister<GridObjectMoved>(OnGridObjectMoved);
+        //Debug.Log("exiting player range at time " + Time.time);
     }
 }
 
@@ -189,5 +210,37 @@ public class NoRangeDisplay : MapDisplayState
     {
         base.OnExit();
         Services.EventManager.Unregister<GridObjectMovementComplete>(OnMovementComplete);
+    }
+}
+
+public class CardRange : MapDisplayState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<CardRendererHoverEnd>(OnCardHoverEnd);
+        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(player.currentTile,
+           Context.hoveredCard.maxRange, player, true, Context.hoveredCard.minRange);
+        foreach (TileRenderer tileRenderer in Context.tileRenderers)
+        {
+            if (tilesInRange.Contains(tileRenderer.tile)) tileRenderer.SetRangeColor(TileRenderer.RangeLevel.ATTACK);
+            else tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+        }
+        //Debug.Log("entering card range at time " + Time.time);
+    }
+
+    public void OnCardHoverEnd(CardRendererHoverEnd e)
+    {
+        if (!e.otherCardHovered)
+        {
+            TransitionTo<PlayerRange>();
+        }
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<CardRendererHoverEnd>(OnCardHoverEnd);
+        //Debug.Log("exiting card range at time " + Time.time);
     }
 }

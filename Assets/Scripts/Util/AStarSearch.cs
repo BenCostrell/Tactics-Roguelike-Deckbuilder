@@ -63,7 +63,7 @@ public static class AStarSearch
     }
 
     public static List<MapTile> FindAllAvailableGoals(MapTile start, int movesAvailable, 
-        GridObject gridObject, bool raw = false)
+        GridObject gridObject, bool raw = false, int minRange = 0)
     {
         List<MapTile> availableGoals = new List<MapTile>();
         if (movesAvailable == 0) return availableGoals;
@@ -80,7 +80,8 @@ public static class AStarSearch
             MapTile current = frontier.Dequeue();
             if (costSoFar[current] <= movesAvailable)
             {
-                if (current != start) availableGoals.Add(current);
+                if (current != start && Coord.Distance(current.coord, start.coord) >= minRange)
+                    availableGoals.Add(current);
                 if (gridObject.IsTilePassable(current) || raw)
                 {
                     foreach (MapTile next in current.neighbors)

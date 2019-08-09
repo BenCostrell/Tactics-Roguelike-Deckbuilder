@@ -20,6 +20,8 @@ public class NavArrow : MonoBehaviour
     public void OnTileHovered(TileHovered e)
     {
         if (e.tile == lastTileHovered) return;
+        if (e.cardSelected) return;
+        lastTileHovered = e.tile;
         Player player = Services.LevelManager.player;
         bool cantReach = false;
         if (e.tile != null)

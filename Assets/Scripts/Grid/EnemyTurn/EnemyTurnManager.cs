@@ -23,6 +23,11 @@ public class EnemyTurnManager
 
     public void EnactEnemyBehaviors()
     {
+        if (gridObjects.Count == 0)
+        {
+            Services.EventManager.Fire(new AllQueuedAnimationsComplete());
+            return;
+        }
         foreach (GridObject gridObject in gridObjects)
         {
             List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>(

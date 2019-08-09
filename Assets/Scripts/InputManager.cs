@@ -68,7 +68,7 @@ public class InputManager : MonoBehaviour
             TileRenderer tileRendererHit = hit.transform.GetComponent<TileRenderer>();
             if(tileRendererHit != null)
             {
-                tileRendererHit.OnHover();
+                tileRendererHit.OnHover(selectedRendererID != -1);
                 hoveredTile = tileRendererHit;
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -81,7 +81,7 @@ public class InputManager : MonoBehaviour
             }
             else if (hit.transform.gameObject.CompareTag("Background"))
             {
-                Services.EventManager.Fire(new TileHovered(null));
+                Services.EventManager.Fire(new TileHovered(null, selectedRendererID != -1));
             }
         }
         if (!Input.GetMouseButton(0) && !clickSelected)
@@ -92,6 +92,7 @@ public class InputManager : MonoBehaviour
         if (selectedRendererID == -1)
         {
             Services.EventManager.Fire(new CardRendererHover(id));
+            //Debug.Log(id);
         }
         else
         {

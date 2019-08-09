@@ -331,18 +331,28 @@ public class Unhovered : InHand
 
 public class Hovered : InHand
 {
+    private bool otherCardHovered;
+
     public override void OnEnter()
     {
         base.OnEnter();
         Context.SetHoverStatus(true);
         Services.EventManager.Register<CardRendererSelected>(OnSelected);
+        Services.EventManager.Fire(new CardRendererHoverStart(Context));
+        otherCardHovered = false;
     }
 
     public override void OnCardRendererHover(CardRendererHover e)
     {
+        bool cardHovered = e.id != -1;
         if (e.id != Context.id)
         {
+            otherCardHovered = cardHovered;
             TransitionTo<Unhovered>();
+        }
+        else
+        {
+            otherCardHovered = false;
         }
     }
 
@@ -356,10 +366,11 @@ public class Hovered : InHand
     {
         base.OnExit();
         Services.EventManager.Unregister<CardRendererSelected>(OnSelected);
+        Services.EventManager.Fire(new CardRendererHoverEnd(Context, otherCardHovered));
     }
 }
 
-public class Selected : InHand
+public class Selected : Hovered
 {
     private const float maxY = -2f;
     private bool castThreshold;
@@ -407,7 +418,7 @@ public class Selected : InHand
     public void OnInputUp(InputUp e)
     {
         if (e.withinClickWindow) return;
-        if (!targeted && castThreshold)
+        if (!targeted && castThreshold && Context.card.IsCastable(null))
         {
             TransitionTo<Casting>();
         }
@@ -421,7 +432,7 @@ public class Selected : InHand
     {
         if (e.buttonNum == 1)
         {
-            if (!targeted && castThreshold)
+            if (!targeted && castThreshold && Context.card.IsCastable(null))
             {
                 TransitionTo<Casting>();
             }
@@ -435,7 +446,7 @@ public class Selected : InHand
     public void OnMapTileSelected(MapTileSelected e)
     {
         if (e.selectedCardId != Context.id) return;
-        if (Context.card.IsTargetLegal(e.mapTile))
+        if (Context.card.IsCastable(e.mapTile))
         {
             Context.currentTarget = e.mapTile;
             TransitionTo<Casting>();
@@ -527,5 +538,26 @@ public class StartCardAnimation : GameEvent
         cardEvent = cardEvent_;
         id = id_;
     }
+}
+
+public class CardRendererHoverStart : GameEvent
+{
+    public readonly CardRenderer cardRenderer;
+    public CardRendererHoverStart(CardRenderer cardRenderer_)
+    {
+        cardRenderer = cardRenderer_;
+    }
+}
+
+public class CardRendererHoverEnd : GameEvent
+{
+    public readonly CardRenderer cardRenderer;
+    public readonly bool otherCardHovered;
+    public CardRendererHoverEnd(CardRenderer cardRenderer_, bool otherCardHovered_)
+    {
+        cardRenderer = cardRenderer_;
+        otherCardHovered = otherCardHovered_;
+    }
+
 }
 

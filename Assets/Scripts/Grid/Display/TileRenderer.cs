@@ -36,9 +36,9 @@ public class TileRenderer : MonoBehaviour
     //    }
     //}
 
-    public void OnHover()
+    public void OnHover(bool cardSelected)
     {
-        Services.EventManager.Fire(new TileHovered(tile));
+        Services.EventManager.Fire(new TileHovered(tile, cardSelected));
     }
 
     public void OnSelected(int cardSelectedId)
@@ -61,9 +61,11 @@ public class TileRenderer : MonoBehaviour
 public class TileHovered : GameEvent
 {
     public readonly MapTile tile;
+    public readonly bool cardSelected;
 
-    public TileHovered(MapTile tile_)
+    public TileHovered(MapTile tile_, bool cardSelected_)
     {
         tile = tile_;
+        cardSelected = cardSelected_;
     }
 }

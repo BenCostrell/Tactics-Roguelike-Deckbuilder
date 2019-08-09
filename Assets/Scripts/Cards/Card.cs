@@ -27,7 +27,28 @@ public class Card
         }
     }
     private static int nextId_;
-    
+    public int minRange
+    {
+        get
+        {
+            foreach (CardEffect cardEffect in effects)
+            {
+                if (cardEffect.targeted) return cardEffect.minRange;
+            }
+            return 0;
+        }
+    }
+    public int maxRange
+    {
+        get
+        {
+            foreach (CardEffect cardEffect in effects)
+            {
+                if (cardEffect.targeted) return cardEffect.maxRange;
+            }
+            return 0;
+        }
+    }
 
     public Card(CardData data_)
     {
@@ -53,6 +74,13 @@ public class Card
         {
             effect.Execute(target);
         }
+    }
+
+    public bool IsCastable(MapTile target)
+    {
+        if (cost > Services.LevelManager.player.currentEnergy) return false;
+        if (!IsTargetLegal(target)) return false;
+        return true;
     }
 }
 
