@@ -1,11 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TileRenderer : MonoBehaviour
 {
     private SpriteRenderer sr;
-    private MapTile tile;
+    public MapTile tile { get; private set; }
     private BoxCollider2D col;
+    public enum RangeLevel { NONE, MOVE, ATTACK }
+    private static Dictionary<RangeLevel, Color> rangeColorDict = new Dictionary<RangeLevel, Color>()
+    {
+        { RangeLevel.NONE, Color.white },
+        { RangeLevel.MOVE, new Color(100f/255, 149f/255, 237f/255) },
+        { RangeLevel.ATTACK, Color.red }
+    };
 
     public void Init(MapTile tile_, Transform mapHolder)
     {
@@ -36,6 +44,11 @@ public class TileRenderer : MonoBehaviour
     public void OnSelected(int cardSelectedId)
     {
         Services.EventManager.Fire(new MapTileSelected(tile, cardSelectedId));
+    }
+
+    public void SetRangeColor(RangeLevel rangeLevel)
+    {
+        sr.color = rangeColorDict[rangeLevel];
     }
 
     // Update is called once per frame

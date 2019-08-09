@@ -239,17 +239,50 @@ public class BeingDrawn : Animating
 
 public abstract class InHand : CardState
 {
+    private Vector3 targetHandPos;
+    private Quaternion targetHandRot;
+    private const float adjustDuration = 0.3f;
+    private float adjustTimeRemaining;
+    private Vector3 prevHandPos;
+    private Quaternion prevHandRot;
+
     public override void OnEnter()
     {
         base.OnEnter();
         Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
         Services.EventManager.Register<CardEventQueued>(OnCardEventQueued);
+        Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
+        prevHandRot = Context.transform.localRotation;
+        prevHandPos = Context.transform.localPosition;
+        adjustTimeRemaining = 0;
+        //Debug.Log("card " + Context.id + " entering an in hand state");
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (adjustTimeRemaining > 0)
+        {
+            adjustTimeRemaining -= Time.deltaTime;
+            float progress = EasingEquations.Easing
+                .QuadEaseOut(1 - (adjustTimeRemaining / adjustDuration));
+            Context.transform.localRotation = Quaternion.Lerp(prevHandRot, targetHandRot, progress);
+            Context.transform.localPosition = Vector3.Lerp(prevHandPos, targetHandPos, progress);
+        }
+    }
+
+    public void OnCardDiscarded(CardDiscarded e)
+    {
+        targetHandPos = Context.GetHandPos();
+        targetHandRot = Context.GetHandRot();
+        adjustTimeRemaining = adjustDuration;
+        //Debug.Log("resetting pos");
     }
 
     public void OnCardEventQueued(CardEventQueued e)
     {
         if (e.id != Context.id) return;
-        if(e.cardEvent is CardDiscarded)
+        if (e.cardEvent is CardDiscarded)
         {
             TransitionTo<WaitingToBeDiscarded>();
         }
@@ -265,6 +298,8 @@ public abstract class InHand : CardState
         base.OnExit();
         Services.EventManager.Unregister<CardEventQueued>(OnCardEventQueued);
         Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
+        Services.EventManager.Unregister<CardDiscarded>(OnCardDiscarded);
+        //Debug.Log("card " + Context.id + " exiting an in hand state");
     }
 }
 
@@ -448,6 +483,7 @@ public class BeingDiscarded : Animating
         base.OnEnter();
         cardHolder = Context.transform.parent;
         Context.transform.parent = DiscardPileUI.frameTransform;
+        startScale = Context.transform.localScale;
         startPos = Context.transform.localPosition;
         startRot = Context.transform.localRotation;
         timeElapsed = 0;

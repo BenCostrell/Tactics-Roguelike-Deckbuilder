@@ -5,10 +5,10 @@ using UnityEngine;
 public class Player : GridObject
 {
     private int _currentEnergy;
-    private int currentEnergy
+    public int currentEnergy
     {
         get { return _currentEnergy; }
-        set
+        private set
         {
             if (currentEnergy != value)
             {
@@ -43,6 +43,7 @@ public class Player : GridObject
         Services.EventManager.Register<MapTileSelected>(OnTileSelected);
         Services.EventManager.Register<PlayerTurnStarted>(Refresh);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
+        Services.EventManager.Register<CardCast>(OnCardCast);
         currentMaxEnergy = BASEMAXENERGY;
         currentEnergy = currentMaxEnergy;
         Services.LevelManager.player = this;
@@ -75,6 +76,11 @@ public class Player : GridObject
 
         // temp until enemy turn is implemented
         //Services.LevelManager.Invoke("RestartPlayerTurn", 5);
+    }
+
+    public void OnCardCast(CardCast e)
+    {
+        currentEnergy -= e.card.cost;
     }
 }
 

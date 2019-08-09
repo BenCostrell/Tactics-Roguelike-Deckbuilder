@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class MapDisplayer
 {
-    private TileRenderer[,] tileRenderers;
+    public TileRenderer[,] tileRenderers { get; private set; }
     private Dictionary<int, GridObjectRenderer> gridObjectRenderers;
     public Transform mapHolder { get; private set; }
     private readonly Vector2 centerOffset = new Vector2(0.5f, 2f);
@@ -14,11 +14,14 @@ public class MapDisplayer
     private Queue<GameEvent> animationQueue;
     private bool wasAnimating;
     private GridObjectRenderer gridObjectRendererPrefab;
+    private StateMachine<MapDisplayer> stateMachine;
+    private NavArrow navArrow;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
         gridObjectRendererPrefab = Resources.Load<GridObjectRenderer>("Prefabs/GridObjectRenderer");
         mapHolder = new GameObject("MapHolder").transform;
+        navArrow = GameObject.Instantiate<NavArrow>(Resources.Load<NavArrow>("Prefabs/NavArrow"), mapHolder);
         int width = map.GetLength(0);
         int height = map.GetLength(1);
         tileRenderers = new TileRenderer[width, height];
@@ -45,6 +48,8 @@ public class MapDisplayer
         reticle = reticleObj.AddComponent<Reticle>();
         reticle.Init(mapHolder);
         animationQueue = new Queue<GameEvent>();
+        stateMachine = new StateMachine<MapDisplayer>(this);
+        stateMachine.InitializeState<PlayerRange>();
     }
 
     public void OnObjectAttacked(ObjectAttacked e)
@@ -99,7 +104,90 @@ public class MapDisplayer
     public void Update()
     {
         ProcessAnimationQueue();
+        stateMachine.Update();
     }
 }
 
 public class AllQueuedAnimationsComplete : GameEvent { }
+
+public abstract class MapDisplayState : StateMachine<MapDisplayer>.State
+{
+    protected Player player { get { return Services.LevelManager.player; } }
+}
+
+public class PlayerRange : MapDisplayState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        SetPlayerRangeDisplay();
+        Services.EventManager.Register<EnergyChanged>(OnEnergyChanged);
+        Services.EventManager.Register<GridObjectMoved>(OnGridObjectMoved);
+        Services.EventManager.Register<GridObjectDeath>(OnGridObjectDeath);
+    }
+
+    public void OnEnergyChanged(EnergyChanged e)
+    {
+        SetPlayerRangeDisplay();
+    }
+
+    public void OnGridObjectDeath(GridObjectDeath e)
+    {
+        SetPlayerRangeDisplay();
+    }
+
+    public void OnGridObjectMoved(GridObjectMoved e)
+    {
+        if (e.gridObject != player) return;
+        TransitionTo<NoRangeDisplay>();
+    }
+
+    private void SetPlayerRangeDisplay()
+    {
+        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(player.currentTile,
+            player.currentEnergy, player);
+        foreach(TileRenderer tileRenderer in Context.tileRenderers)
+        {
+            if (tilesInRange.Contains(tileRenderer.tile))
+            {
+                tileRenderer.SetRangeColor(TileRenderer.RangeLevel.MOVE);
+            }
+            else
+            {
+                tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+            }
+        }
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<EnergyChanged>(OnEnergyChanged);
+        Services.EventManager.Unregister<GridObjectMoved>(OnGridObjectMoved);
+    }
+}
+
+public class NoRangeDisplay : MapDisplayState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        foreach(TileRenderer tileRenderer in Context.tileRenderers)
+        {
+            tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+        }
+        Services.EventManager.Register<GridObjectMovementComplete>(OnMovementComplete);
+    }
+
+    public void OnMovementComplete(GridObjectMovementComplete e)
+    {
+        if (e.id != player.id) return;
+        TransitionTo<PlayerRange>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<GridObjectMovementComplete>(OnMovementComplete);
+    }
+}

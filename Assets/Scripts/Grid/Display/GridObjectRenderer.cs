@@ -147,6 +147,7 @@ public class GridObjectRenderer : MonoBehaviour
             yield return null;
         }
         animating = false;
+        Services.EventManager.Fire(new GridObjectMovementComplete(id));
     }
 }
 
@@ -155,6 +156,15 @@ public class AttackAnimationComplete : GameEvent
     public readonly int id;
 
     public AttackAnimationComplete(int id_)
+    {
+        id = id_;
+    }
+}
+
+public class GridObjectMovementComplete : GameEvent
+{
+    public readonly int id;
+    public GridObjectMovementComplete(int id_)
     {
         id = id_;
     }

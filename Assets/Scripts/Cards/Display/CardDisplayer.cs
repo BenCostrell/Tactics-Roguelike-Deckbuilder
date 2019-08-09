@@ -66,6 +66,7 @@ public class CardDisplayer
                 framePause = true;
                 Services.EventManager.Fire(new StartCardAnimation(queuedCardEvent.cardEvent,
                     queuedCardEvent.id));
+                Services.EventManager.Fire(queuedCardEvent.cardEvent);
                 //Debug.Log("firing " + queuedCardEvent.cardEvent.GetType() + " at time " +Time.time);
             }
         }
