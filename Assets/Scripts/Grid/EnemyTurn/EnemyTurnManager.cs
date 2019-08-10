@@ -23,11 +23,7 @@ public class EnemyTurnManager
 
     public void EnactEnemyBehaviors()
     {
-        if (gridObjects.Count == 0)
-        {
-            Services.EventManager.Fire(new AllQueuedAnimationsComplete());
-            return;
-        }
+        int behaviorCount = 0;
         foreach (GridObject gridObject in gridObjects)
         {
             List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>(
@@ -35,7 +31,12 @@ public class EnemyTurnManager
             foreach (EnemyTurnBehavior behavior in behaviors)
             {
                 behavior.OnEnemyTurn(gridObject);
+                behaviorCount += 1;
             }
+        }
+        if (behaviorCount == 0)
+        {
+            Services.EventManager.Fire(new AllQueuedAnimationsComplete());
         }
     }
 
@@ -48,8 +49,8 @@ public class EnemyTurnManager
     {
         public override void OnEnter()
         {
-            Context.EnactEnemyBehaviors();
             Services.EventManager.Register<AllQueuedAnimationsComplete>(OnAnimationsComplete);
+            Context.EnactEnemyBehaviors();
         }
 
         public void OnAnimationsComplete(AllQueuedAnimationsComplete e)

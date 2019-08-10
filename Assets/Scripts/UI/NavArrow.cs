@@ -8,6 +8,7 @@ public class NavArrow : MonoBehaviour
     public SpriteRenderer arrow;
     private MapTile lastTileHovered;
     private const float arrowOffset = 0.1f;
+    private int lastPlayerEnergy;
 
     // Start is called before the first frame update
     void Start()
@@ -19,10 +20,11 @@ public class NavArrow : MonoBehaviour
 
     public void OnTileHovered(TileHovered e)
     {
-        if (e.tile == lastTileHovered) return;
-        if (e.cardSelected) return;
-        lastTileHovered = e.tile;
         Player player = Services.LevelManager.player;
+        if (e.tile == lastTileHovered && player.currentEnergy == lastPlayerEnergy) return;
+        if (e.cardSelected) return;
+        lastPlayerEnergy = player.currentEnergy;
+        lastTileHovered = e.tile;
         bool cantReach = false;
         if (e.tile != null)
         {
