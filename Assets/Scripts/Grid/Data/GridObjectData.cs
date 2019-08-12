@@ -13,7 +13,7 @@ public struct GridObjectData
     public readonly List<EnemyTurnBehavior> enemyTurnBehaviors;
     public enum TargetPriority { ONLY_PLAYER, ONLY_PLANT, PLAYER_PLANT, PLANT_PLAYER, NEAREST, NONE }
     public readonly TargetPriority targetPriority;
-    public enum Phylum { ENEMY, PLANT, PLAYER }
+    public enum Phylum { NONE, ENEMY, PLANT, PLAYER }
     public readonly Phylum phylum;
 
     public GridObjectData(string gridObjectName_, Sprite sprite_, int maxHealth_,
@@ -30,5 +30,20 @@ public struct GridObjectData
         enemyTurnBehaviors = enemyTurnBehaviors_;
         targetPriority = targetPriority_;
         phylum = phylum_;
+    }
+
+    public static Phylum StringToPhylum(string str)
+    {
+        switch (str.ToUpper())
+        {
+            case "ENEMY":
+                return Phylum.ENEMY;
+            case "PLANT":
+                return Phylum.PLANT;
+            case "PLAYER":
+                return Phylum.PLAYER;
+            default:
+                return Phylum.NONE;
+        }
     }
 }

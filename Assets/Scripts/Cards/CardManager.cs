@@ -13,8 +13,9 @@ public class CardManager
 
     public int handCount { get { return hand.Count; } }
 
-    private const int marginalCardsPerTurn = 3;
+    private const int marginalCardsPerTurn = 2;
     private const int maxStartingCards = 6;
+    private const int openingHandSize = 3;
 
     public CardManager()
     {
@@ -28,11 +29,22 @@ public class CardManager
         Services.EventManager.Register<CardCast>(OnCardCast);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         // for testing, creating starting deck
-        CardData whackData = Services.CardDataManager.GetData("Whack");
-        for (int i = 0; i < 10; i++)
+        //CardData whackData = Services.CardDataManager.GetData("Whack");
+        //for (int i = 0; i < 10; i++)
+        //{
+        //    Card whackCard = new Card(whackData);
+        //    fullDeck.Add(whackCard);
+        //}
+
+        //probably also temporary system
+        List<CardData> startingDeckData = Services.CardDataManager.GetStartingDeckData();
+        foreach(CardData cardData in startingDeckData)
         {
-            Card whackCard = new Card(whackData);
-            fullDeck.Add(whackCard);
+            for (int i = 0; i < cardData.startingDeckCount; i++)
+            {
+                Card card = new Card(cardData);
+                fullDeck.Add(card);
+            }
         }
         //
     }
@@ -45,7 +57,7 @@ public class CardManager
     public void OnLevelStart()
     {
         currentDeck = new List<Card>(fullDeck);
-        DrawNewHand();
+        DrawNewHand(true);
     }
 
     public void AcquireCard(Card card)
@@ -87,9 +99,10 @@ public class CardManager
         DrawNewHand();
     }
 
-    public void DrawNewHand()
+    public void DrawNewHand(bool startingHand = false)
     {
         int newHandSize = Mathf.Min(maxStartingCards, hand.Count + marginalCardsPerTurn);
+        if (startingHand) newHandSize = openingHandSize;
         foreach (Card card in hand)
         {
             DiscardCard(card);

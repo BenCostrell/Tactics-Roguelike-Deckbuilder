@@ -7,8 +7,9 @@ public abstract class CardEffect
     public readonly bool targeted;
     public readonly int minRange;
     public readonly int maxRange;
+    protected Player player { get { return Services.LevelManager.player; } }
 
-    public CardEffect(bool targeted_, int minRange_, int maxRange_)
+    public CardEffect(bool targeted_, int minRange_ = 0, int maxRange_ = 0)
     {
         targeted = targeted_;
         minRange = minRange_;
@@ -24,7 +25,7 @@ public abstract class CardEffect
     {
         if (!targeted) return true;
         if (targeted && target == null) return false;
-        int dist = Coord.Distance(target.coord, Services.LevelManager.player.currentTile.coord);
+        int dist = Coord.Distance(target.coord, player.currentTile.coord);
         if (dist > maxRange || dist < minRange) return false;
         return true;
     }
@@ -44,8 +45,23 @@ public abstract class CardEffect
                     int.Parse(splitEffectString[1]), // damage
                     int.Parse(splitEffectString[2]), // minRange
                     int.Parse(splitEffectString[3])); // maxRange
+            case "MANA":
+                return new Mana(int.Parse(splitEffectString[1]));
+            case "DRAW":
+                return new Draw(int.Parse(splitEffectString[1]));
+            // need to figure out syntax to allow for nesting card effects inside conditionals, or alternative solution
+            //case "COND":
+            //    return new Conditional()
+            case "TARGET_PHYLA":
+                List<GridObjectData.Phylum> allowedPhyla = new List<GridObjectData.Phylum>();
+                for (int i = 1; i < splitEffectString.Length; i++)
+                {
+                    allowedPhyla.Add(GridObjectData.StringToPhylum(splitEffectString[i]));
+                }
+                return new PhylumTargetOnly(allowedPhyla);
             default:
                 return null;
         }
     }
+
 }

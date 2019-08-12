@@ -31,12 +31,30 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 1440083381349893897, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
-    totalSpriteSurfaceArea: 256
+    - {fileID: 9003373388923997673, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    - {fileID: -3375177919691159993, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    - {fileID: 2226381682799952441, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    - {fileID: 1108447003670324394, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    - {fileID: -515568720839805702, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    - {fileID: -6666972964256500226, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    totalSpriteSurfaceArea: 1792
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
+  - {fileID: 2226381682799952441, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: -515568720839805702, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: -6666972964256500226, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: -3375177919691159993, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: 1108447003670324394, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   - {fileID: 1440083381349893897, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: 9003373388923997673, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   m_PackedSpriteNamesToIndex:
+  - chug
+  - soulpunch
+  - prune
+  - slash
+  - scroll
   - whack
+  - bow
   m_Tag: CardSprites
   m_IsVariant: 0

@@ -22,6 +22,11 @@ public class LevelManager : MonoBehaviour
         if (Services.CardManager == null) Services.CardManager = new CardManager();
     }
 
+    private void Start()
+    {
+        Services.CardManager.OnLevelStart();
+    }
+
     private void Update()
     {
         _mapManager.Update();
@@ -30,10 +35,10 @@ public class LevelManager : MonoBehaviour
         {
             ResetGame();
         }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Services.CardManager.OnLevelStart();
-        }
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    Services.CardManager.OnLevelStart();
+        //}
     }
 
     //temp for testing

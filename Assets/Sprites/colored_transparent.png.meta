@@ -655,7 +655,7 @@ TextureImporter:
     second: colored_transparent_216
   - first:
       213: -515568720839805702
-    second: colored_transparent_217
+    second: soulpunch
   - first:
       213: 2322448276218110722
     second: colored_transparent_218
@@ -2236,7 +2236,7 @@ TextureImporter:
     second: colored_transparent_743
   - first:
       213: -6666972964256500226
-    second: colored_transparent_744
+    second: prune
   - first:
       213: 1005261381913168945
     second: colored_transparent_745
@@ -2449,7 +2449,7 @@ TextureImporter:
     second: colored_transparent_814
   - first:
       213: 2226381682799952441
-    second: colored_transparent_815
+    second: chug
   - first:
       213: 4947613712603189198
     second: colored_transparent_816
@@ -2644,7 +2644,7 @@ TextureImporter:
     second: colored_transparent_879
   - first:
       213: 1108447003670324394
-    second: colored_transparent_880
+    second: scroll
   - first:
       213: -5723008993561047886
     second: colored_transparent_881
@@ -2704,7 +2704,7 @@ TextureImporter:
     second: colored_transparent_899
   - first:
       213: 9003373388923997673
-    second: colored_transparent_900
+    second: bow
   - first:
       213: 6328665365731174910
     second: colored_transparent_901
@@ -2785,7 +2785,7 @@ TextureImporter:
     second: colored_transparent_926
   - first:
       213: -3375177919691159993
-    second: colored_transparent_927
+    second: slash
   - first:
       213: -5871491259106895614
     second: colored_transparent_928
@@ -8132,7 +8132,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_217
+      name: soulpunch
       rect:
         serializedVersion: 2
         x: 442
@@ -19199,7 +19199,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_744
+      name: prune
       rect:
         serializedVersion: 2
         x: 153
@@ -20690,7 +20690,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_815
+      name: chug
       rect:
         serializedVersion: 2
         x: 272
@@ -22055,7 +22055,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_880
+      name: scroll
       rect:
         serializedVersion: 2
         x: 289
@@ -22475,7 +22475,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_900
+      name: bow
       rect:
         serializedVersion: 2
         x: 85
@@ -23042,7 +23042,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_927
+      name: slash
       rect:
         serializedVersion: 2
         x: 0

@@ -82,6 +82,11 @@ public class Player : GridObject
     {
         currentEnergy -= e.card.cost;
     }
+
+    public void GainEnergy(int energyChange)
+    {
+        currentEnergy += energyChange;
+    }
 }
 
 public class EnergyChanged : GameEvent

@@ -27,14 +27,15 @@ public struct CardData
             return false;
         }
     }
+    public readonly int startingDeckCount;
 
-
-    public CardData(string name_, int cost_, List<CardEffect> effects_, string text_, Sprite sprite_)
+    public CardData(string name_, int cost_, List<CardEffect> effects_, string text_, Sprite sprite_, int startingDeckCount_)
     {
         name = name_;
         cost = cost_;
         effects = effects_;
         rawText = text_;
         sprite = sprite_;
+        startingDeckCount = startingDeckCount_;
     }
 }
