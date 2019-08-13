@@ -25,25 +25,6 @@ public class TileRenderer : MonoBehaviour
         transform.parent = mapHolder;
         transform.localPosition = new Vector3(tile.coord.x, tile.coord.y, 0);
         col = gameObject.AddComponent<BoxCollider2D>();
-        //Services.EventManager.Register<InputHover>(CheckHover);
-    }
-
-    //public void CheckHover(InputHover e)
-    //{
-    //    if (sr.bounds.Contains(e.worldPos))
-    //    {
-    //        OnHover();
-    //    }
-    //}
-
-    public void OnHover(bool cardSelected)
-    {
-        Services.EventManager.Fire(new TileHovered(tile, cardSelected));
-    }
-
-    public void OnSelected(int cardSelectedId)
-    {
-        Services.EventManager.Fire(new MapTileSelected(tile, cardSelectedId));
     }
 
     public void SetRangeColor(RangeLevel rangeLevel)
@@ -55,17 +36,5 @@ public class TileRenderer : MonoBehaviour
     void Update()
     {
 
-    }
-}
-
-public class TileHovered : GameEvent
-{
-    public readonly MapTile tile;
-    public readonly bool cardSelected;
-
-    public TileHovered(MapTile tile_, bool cardSelected_)
-    {
-        tile = tile_;
-        cardSelected = cardSelected_;
     }
 }

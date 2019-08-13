@@ -40,7 +40,7 @@ public class Player : GridObject
 
     public Player() : base(Services.GridObjectDataManager.GetData("PLAYER"))
     {
-        Services.EventManager.Register<MapTileSelected>(OnTileSelected);
+        Services.EventManager.Register<InputDown>(OnInputDown);
         Services.EventManager.Register<PlayerTurnStarted>(Refresh);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         Services.EventManager.Register<CardCast>(OnCardCast);
@@ -49,10 +49,11 @@ public class Player : GridObject
         Services.LevelManager.player = this;
     }
 
-    private void OnTileSelected(MapTileSelected e)
+    private void OnInputDown(InputDown e)
     {
-        if (e.selectedCardId != -1) return;
-        MapTile targetTile = e.mapTile;
+        if (e.cardSelected) return;
+        if (e.hoveredTile == null) return;
+        MapTile targetTile = e.hoveredTile.tile;
         if (targetTile != currentTile)
         {
             List<MapTile> path = AStarSearch.ShortestPath(currentTile, targetTile, this);
@@ -67,12 +68,12 @@ public class Player : GridObject
     public void Refresh(PlayerTurnStarted e)
     {
         currentEnergy = currentMaxEnergy;
-        Services.EventManager.Register<MapTileSelected>(OnTileSelected);
+        Services.EventManager.Register<InputDown>(OnInputDown);
     }
 
     public void OnPlayerTurnEnded(PlayerTurnEnded e)
     {
-        Services.EventManager.Unregister<MapTileSelected>(OnTileSelected);
+        Services.EventManager.Unregister<InputDown>(OnInputDown);
 
         // temp until enemy turn is implemented
         //Services.LevelManager.Invoke("RestartPlayerTurn", 5);

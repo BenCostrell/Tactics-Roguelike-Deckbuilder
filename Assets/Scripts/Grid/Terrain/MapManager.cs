@@ -90,16 +90,6 @@ public class MapManager
         }
     }
 
-    private void OnInputDown(InputDown e)
-    {
-        Vector2 mouseLocalPos = _mapDisplayer.mapHolder.InverseTransformPoint(e.worldPos);
-        Coord coord = new Coord(Mathf.RoundToInt(mouseLocalPos.x), Mathf.RoundToInt(mouseLocalPos.y));
-        if (IsCoordInMap(coord))
-        {
-            Services.EventManager.Fire(new MapTileSelected(map[coord.x, coord.y], e.selectedCardId));
-        }
-    }
-
     private bool IsCoordInMap(Coord coord)
     {
         return coord.x >= 0 && coord.x < map.GetLength(0) && coord.y >= 0 && coord.y < map.GetLength(1);

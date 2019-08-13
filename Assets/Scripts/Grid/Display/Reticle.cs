@@ -14,19 +14,19 @@ public class Reticle : MonoBehaviour
         sr.sprite = Resources.Load<SpriteAtlas>("SpriteData/UiAtlas").GetSprite("reticle1");
         sr.sortingLayerName = "UI";
         gameObject.name = "Reticle";
-        Services.EventManager.Register<TileHovered>(OnTileHovered);
+        Services.EventManager.Register<InputHover>(OnInputHover);
     }
 
-    public void OnTileHovered(TileHovered e)
+    public void OnInputHover(InputHover e)
     {
-        if (e.tile == null)
+        if (e.hoveredTile == null)
         {
             sr.enabled = false;
         }
         else
         {
             sr.enabled = true;
-            transform.localPosition = new Vector3(e.tile.coord.x, e.tile.coord.y, 0);
+            transform.localPosition = new Vector3(e.hoveredTile.tile.coord.x, e.hoveredTile.tile.coord.y, 0);
         }
     }
 

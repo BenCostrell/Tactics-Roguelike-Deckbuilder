@@ -249,7 +249,7 @@ public abstract class InHand : CardState
     public override void OnEnter()
     {
         base.OnEnter();
-        Services.EventManager.Register<CardRendererHover>(OnCardRendererHover);
+        Services.EventManager.Register<InputHover>(OnInputHover);
         Services.EventManager.Register<CardEventQueued>(OnCardEventQueued);
         Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
         prevHandRot = Context.transform.localRotation;
@@ -288,7 +288,7 @@ public abstract class InHand : CardState
         }
     }
 
-    public virtual void OnCardRendererHover(CardRendererHover e)
+    public virtual void OnInputHover(InputHover e)
     {
         
     }
@@ -297,7 +297,7 @@ public abstract class InHand : CardState
     {
         base.OnExit();
         Services.EventManager.Unregister<CardEventQueued>(OnCardEventQueued);
-        Services.EventManager.Unregister<CardRendererHover>(OnCardRendererHover);
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
         Services.EventManager.Unregister<CardDiscarded>(OnCardDiscarded);
         //Debug.Log("card " + Context.id + " exiting an in hand state");
     }
@@ -321,10 +321,11 @@ public class Unhovered : InHand
         Context.SetHoverStatus(false);
     }
 
-    public override void OnCardRendererHover(CardRendererHover e)
+    public override void OnInputHover(InputHover e)
     {
-        base.OnCardRendererHover(e);
-        if (e.id != Context.id) return;
+        base.OnInputHover(e);
+        if (e.hoveredCard != Context) return;
+        if (e.cardSelected) return;
         TransitionTo<Hovered>();
     }
 }
@@ -337,35 +338,29 @@ public class Hovered : InHand
     {
         base.OnEnter();
         Context.SetHoverStatus(true);
-        Services.EventManager.Register<CardRendererSelected>(OnSelected);
+        Services.EventManager.Register<InputDown>(OnInputDown);
         Services.EventManager.Fire(new CardRendererHoverStart(Context));
         otherCardHovered = false;
     }
 
-    public override void OnCardRendererHover(CardRendererHover e)
+    public override void OnInputHover(InputHover e)
     {
-        bool cardHovered = e.id != -1;
-        if (e.id != Context.id)
+        if (e.hoveredCard != Context)
         {
-            otherCardHovered = cardHovered;
             TransitionTo<Unhovered>();
         }
-        else
-        {
-            otherCardHovered = false;
-        }
+        otherCardHovered = e.hoveredCard != null;
     }
 
-    public void OnSelected(CardRendererSelected e)
+    public virtual void OnInputDown(InputDown e)
     {
-        if (e.id != Context.id) return;
         TransitionTo<Selected>();
     }
 
     public override void OnExit()
     {
         base.OnExit();
-        Services.EventManager.Unregister<CardRendererSelected>(OnSelected);
+        Services.EventManager.Unregister<InputDown>(OnInputDown);
         Services.EventManager.Fire(new CardRendererHoverEnd(Context, otherCardHovered));
     }
 }
@@ -375,6 +370,8 @@ public class Selected : Hovered
     private const float maxY = -2f;
     private bool castThreshold;
     private bool targeted;
+    private const float clickWindow = 0.1f;
+    private float clickWindowCountdown;
 
     public override void OnEnter()
     {
@@ -382,14 +379,31 @@ public class Selected : Hovered
         targeted = Context.card.data.targeted;
         Context.currentTarget = null;
         Context.SetAnimationSortingStatus(true);
-        Services.EventManager.Register<CardRendererDrag>(OnDrag);
         Services.EventManager.Register<InputUp>(OnInputUp);
         Services.EventManager.Register<InputDown>(OnInputDown);
-        Services.EventManager.Register<MapTileSelected>(OnMapTileSelected);
+        clickWindowCountdown = clickWindow;
+        Services.EventManager.Fire(new CardSelectionStatusChange(true));
     }
-    public void OnDrag(CardRendererDrag e)
+
+    public override void Update()
     {
-        if (e.id != Context.id) return;
+        base.Update();
+        if(clickWindowCountdown > 0)
+        {
+            clickWindowCountdown -= Time.deltaTime;
+        }
+    }
+
+    public override void OnInputHover(InputHover e)
+    {
+        if (e.hoveredTile == null)
+        {
+            Context.currentTarget = null;
+        }
+        else
+        {
+            Context.currentTarget = e.hoveredTile.tile;
+        }
         float y;
         if (targeted)
         {
@@ -404,7 +418,6 @@ public class Selected : Hovered
         float x = floatStop ? Context.transform.position.x : e.worldPos.x;
         Context.transform.position = new Vector3(x, y, 0f);
 
-
         if (floatStop)
         {
             Context.SetArrowStatus(true, Context.transform.position, new Vector3(e.worldPos.x, e.worldPos.y, 0));
@@ -417,8 +430,9 @@ public class Selected : Hovered
 
     public void OnInputUp(InputUp e)
     {
-        if (e.withinClickWindow) return;
-        if (!targeted && castThreshold && Context.card.IsCastable(null))
+        if (clickWindowCountdown > 0) return;
+        if ((!targeted && castThreshold && Context.card.IsCastable(null)) ||
+            targeted && Context.card.IsCastable(Context.currentTarget))
         {
             TransitionTo<Casting>();
         }
@@ -428,30 +442,9 @@ public class Selected : Hovered
         }
     }
 
-    public void OnInputDown(InputDown e)
+    public override void OnInputDown(InputDown e)
     {
         if (e.buttonNum == 1)
-        {
-            if (!targeted && castThreshold && Context.card.IsCastable(null))
-            {
-                TransitionTo<Casting>();
-            }
-            else
-            {
-                TransitionTo<Unhovered>();
-            }
-        }
-    }
-
-    public void OnMapTileSelected(MapTileSelected e)
-    {
-        if (e.selectedCardId != Context.id) return;
-        if (Context.card.IsCastable(e.mapTile))
-        {
-            Context.currentTarget = e.mapTile;
-            TransitionTo<Casting>();
-        }
-        else
         {
             TransitionTo<Unhovered>();
         }
@@ -462,10 +455,9 @@ public class Selected : Hovered
         base.OnExit();
         Context.SetAnimationSortingStatus(false);
         Context.SetArrowStatus(false, Vector3.zero, Vector3.zero);
-        Services.EventManager.Unregister<CardRendererDrag>(OnDrag);
         Services.EventManager.Unregister<InputUp>(OnInputUp);
         Services.EventManager.Unregister<InputDown>(OnInputDown);
-        Services.EventManager.Unregister<MapTileSelected>(OnMapTileSelected);
+        Services.EventManager.Fire(new CardSelectionStatusChange(false));
     }
 }
 
@@ -558,6 +550,14 @@ public class CardRendererHoverEnd : GameEvent
         cardRenderer = cardRenderer_;
         otherCardHovered = otherCardHovered_;
     }
+}
 
+public class CardSelectionStatusChange : GameEvent
+{
+    public readonly bool cardSelected;
+    public CardSelectionStatusChange(bool cardSelected_)
+    {
+        cardSelected = cardSelected_;
+    }
 }
 

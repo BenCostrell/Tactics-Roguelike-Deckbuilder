@@ -19,14 +19,14 @@ public class Tooltip : MonoBehaviour
         healthText.text = "";
         unitImage.enabled = false;
         healthBarUI.SetActive(false);
-        Services.EventManager.Register<TileHovered>(OnTileHovered);
+        Services.EventManager.Register<InputHover>(OnInputHover);
     }
 
-    public void OnTileHovered(TileHovered e)
+    public void OnInputHover(InputHover e)
     {
-        if (e.tile != null && e.tile.containedObjects.Count > 0)
+        if (e.hoveredTile != null && e.hoveredTile.tile.containedObjects.Count > 0)
         {
-            GridObject gridObject = e.tile.containedObjects[0];
+            GridObject gridObject = e.hoveredTile.tile.containedObjects[0];
             unitImage.enabled = true;
             unitImage.sprite = gridObject.data.sprite;
             healthBarUI.SetActive(true);

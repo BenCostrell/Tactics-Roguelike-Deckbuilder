@@ -6,7 +6,7 @@ public class NavArrow : MonoBehaviour
 {
     public LineRenderer lr;
     public SpriteRenderer arrow;
-    private MapTile lastTileHovered;
+    private TileRenderer lastTileHovered;
     private const float arrowOffset = 0.1f;
     private int lastPlayerEnergy;
 
@@ -15,27 +15,27 @@ public class NavArrow : MonoBehaviour
     {
         lr.enabled = false;
         arrow.enabled = false;
-        Services.EventManager.Register<TileHovered>(OnTileHovered);
+        Services.EventManager.Register<InputHover>(OnInputHover);
     }
 
-    public void OnTileHovered(TileHovered e)
+    public void OnInputHover(InputHover e)
     {
         Player player = Services.LevelManager.player;
-        if (e.tile == lastTileHovered && player.currentEnergy == lastPlayerEnergy) return;
+        if (e.hoveredTile == lastTileHovered && player.currentEnergy == lastPlayerEnergy) return;
         if (e.cardSelected) return;
         lastPlayerEnergy = player.currentEnergy;
-        lastTileHovered = e.tile;
+        lastTileHovered = e.hoveredTile;
         bool cantReach = false;
-        if (e.tile != null)
+        if (e.hoveredTile != null)
         {
             List<MapTile> playerAvailableGoals = AStarSearch.FindAllAvailableGoals(player.currentTile,
                 player.currentEnergy, player);
-            if(playerAvailableGoals.Contains(e.tile))
+            if(playerAvailableGoals.Contains(e.hoveredTile.tile))
             {
                 lr.enabled = true;
                 arrow.enabled = true;
                 // set positions
-                List<MapTile> path = AStarSearch.ShortestPath(player.currentTile, e.tile, player);
+                List<MapTile> path = AStarSearch.ShortestPath(player.currentTile, e.hoveredTile.tile, player);
                 path.Insert(0, player.currentTile);
                 lr.positionCount = path.Count;
                 Vector3[] positions = new Vector3[path.Count];
