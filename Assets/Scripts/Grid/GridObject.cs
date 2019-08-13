@@ -17,13 +17,9 @@ public class GridObject
     }
     public GridObjectData data { get; private set; }
 
-    public int moveSpeed { get { return data.moveSpeed + _bonusMoveSpeed; } }
-    private int _bonusMoveSpeed;
     public int maxHealth {  get { return data.maxHealth + _bonusMaxHealth; } }
     private int _bonusMaxHealth;
     public int currentHealth { get; private set; }
-    public int attackDamage {  get { return data.attackDamage + _bonusAttackDamage; } }
-    private int _bonusAttackDamage;
 
     public GridObject(GridObjectData data_)
     {

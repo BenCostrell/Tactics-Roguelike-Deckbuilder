@@ -4,15 +4,156 @@ using System.Collections.Generic;
 
 public class Attack : EnemyTurnBehavior
 {
-    public Attack() : base(2)
-    {
+    public readonly int moveSpeed;
+    public readonly int damage;
+    public readonly int range;
+    public enum TargetPriority { ONLY_PLAYER, ONLY_PLANT, PLAYER_PLANT, PLANT_PLAYER, NEAREST, NONE }
+    public readonly TargetPriority targetPriority;
 
+    public Attack(int moveSpeed_, int damage_, int range_, TargetPriority targetPriority_) : base(2)
+    {
+        moveSpeed = moveSpeed_;
+        damage = damage_;
+        range = range_;
+        targetPriority = targetPriority_;
     }
 
     public override void OnEnemyTurn(GridObject gridObject)
     {
+        Approach(gridObject);
+        PerformAttack(gridObject);
+    }
+
+
+    private void Approach(GridObject gridObject)
+    {
+        MapTile targetTile = null;
+        MapTile playerTile = Services.LevelManager.player.currentTile;
         List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
-            gridObject.data.attackRange, gridObject, true);
+            moveSpeed + range, gridObject);
+        List<MapTile> allAvailableTiles = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+            int.MaxValue, gridObject);
+        bool playerInRange = false;
+        bool plantInRange = false;
+        GridObject closestPlant = null;
+        int closestPlantDistance = int.MaxValue;
+        int playerDistance = AStarSearch.ShortestPath(gridObject.currentTile, playerTile, gridObject).Count;
+        // check tiles in range
+        foreach (MapTile tile in tilesInRange)
+        {
+            if (tile == Services.LevelManager.player.currentTile)
+            {
+                playerInRange = true;
+            }
+            foreach (GridObject gridObj in tile.containedObjects)
+            {
+                if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+                {
+                    int distance = AStarSearch.ShortestPath(gridObject.currentTile,
+                        tile, gridObject).Count;
+                    if (distance < closestPlantDistance)
+                    {
+                        closestPlant = gridObj;
+                        closestPlantDistance = distance;
+                        plantInRange = true;
+                    }
+                }
+            }
+        }
+        // check farther tiles
+        if (closestPlant == null)
+        {
+            foreach (MapTile tile in allAvailableTiles)
+            {
+                foreach (GridObject gridObj in tile.containedObjects)
+                {
+                    if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+                    {
+                        int distance = AStarSearch.ShortestPath(gridObject.currentTile,
+                            tile, gridObject).Count;
+                        if (distance < closestPlantDistance)
+                        {
+                            closestPlant = gridObj;
+                            closestPlantDistance = distance;
+                        }
+                    }
+                }
+            }
+        }
+
+        // decide target
+        switch (targetPriority)
+        {
+            case TargetPriority.ONLY_PLAYER:
+                targetTile = Services.LevelManager.player.currentTile;
+                break;
+            case TargetPriority.ONLY_PLANT:
+                targetTile = closestPlant.currentTile;
+                break;
+            case TargetPriority.PLAYER_PLANT:
+                if (playerInRange || playerDistance <= closestPlantDistance)
+                {
+                    targetTile = Services.LevelManager.player.currentTile;
+                }
+                else if (closestPlant != null)
+                {
+                    targetTile = closestPlant.currentTile;
+                }
+                break;
+            case TargetPriority.PLANT_PLAYER:
+                if (plantInRange || closestPlantDistance <= playerDistance)
+                {
+                    targetTile = closestPlant.currentTile;
+                }
+                else
+                {
+                    targetTile = playerTile;
+                }
+                break;
+            case TargetPriority.NEAREST:
+                if (playerDistance <= closestPlantDistance)
+                {
+                    targetTile = playerTile;
+                }
+                else
+                {
+                    targetTile = closestPlant.currentTile;
+                }
+                break;
+            case TargetPriority.NONE:
+                break;
+            default:
+                break;
+        }
+
+        if (targetTile == null) return;
+        List<MapTile> pathToTarget = AStarSearch.ShortestPath(gridObject.currentTile,
+            targetTile, gridObject);
+        // trim the target tile itself
+        if (pathToTarget.Count > 0)
+        {
+            MapTile lastTile = pathToTarget[pathToTarget.Count - 1];
+            if (lastTile == targetTile)
+            {
+                pathToTarget.Remove(targetTile);
+            }
+        }
+        List<MapTile> pathToTake = new List<MapTile>();
+        for (int i = 0; i < Mathf.Min(moveSpeed, pathToTarget.Count); i++)
+        {
+            pathToTake.Add(pathToTarget[i]);
+        }
+        if (pathToTake.Count > 0)
+        {
+            gridObject.MoveToTile(pathToTake);
+        }
+    }
+
+
+    private void PerformAttack(GridObject gridObject)
+    {
+        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+            range, gridObject, true);
         bool playerInRange = false;
         GridObject closestPlant = null;
         int closestPlantDistance = int.MaxValue;
@@ -38,21 +179,21 @@ public class Attack : EnemyTurnBehavior
         }
         GridObject target = null;
 
-        switch (gridObject.data.targetPriority)
+        switch (targetPriority)
         {
-            case GridObjectData.TargetPriority.ONLY_PLAYER:
+            case TargetPriority.ONLY_PLAYER:
                 if (playerInRange)
                 {
                     target = Services.LevelManager.player;
                 }
                 break;
-            case GridObjectData.TargetPriority.ONLY_PLANT:
+            case TargetPriority.ONLY_PLANT:
                 if (closestPlant != null)
                 {
                     target = closestPlant;
                 }
                 break;
-            case GridObjectData.TargetPriority.PLAYER_PLANT:
+            case TargetPriority.PLAYER_PLANT:
                 if (playerInRange)
                 {
                     target = Services.LevelManager.player;
@@ -62,7 +203,7 @@ public class Attack : EnemyTurnBehavior
                     target = closestPlant;
                 }
                 break;
-            case GridObjectData.TargetPriority.PLANT_PLAYER:
+            case TargetPriority.PLANT_PLAYER:
                 if (closestPlant != null)
                 {
                     target = closestPlant;
@@ -72,7 +213,7 @@ public class Attack : EnemyTurnBehavior
                     target = Services.LevelManager.player;
                 }
                 break;
-            case GridObjectData.TargetPriority.NEAREST:
+            case TargetPriority.NEAREST:
                 if (playerInRange && Coord.Distance(Services.LevelManager.player.currentTile.coord,
                     gridObject.currentTile.coord) < closestPlantDistance)
                 {
@@ -83,7 +224,7 @@ public class Attack : EnemyTurnBehavior
                     target = closestPlant;
                 }
                 break;
-            case GridObjectData.TargetPriority.NONE:
+            case TargetPriority.NONE:
                 break;
             default:
                 break;
@@ -91,9 +232,28 @@ public class Attack : EnemyTurnBehavior
 
         if (target == null) return;
 
-        target.TakeDamage(gridObject.attackDamage);
-        Services.EventManager.Fire(new ObjectAttacked(gridObject, target, gridObject.attackDamage));
+        target.TakeDamage(damage);
+        Services.EventManager.Fire(new ObjectAttacked(gridObject, target, damage));
 
+    }
+
+    public static TargetPriority GetTargetPriorityFromString(string priorityString)
+    {
+        switch (priorityString)
+        {
+            case "ONLY_PLAYER":
+                return TargetPriority.ONLY_PLAYER;
+            case "ONLY_PLANT":
+                return TargetPriority.ONLY_PLANT;
+            case "PLAYER_PLANT":
+                return TargetPriority.PLAYER_PLANT;
+            case "PLANT_PLAYER":
+                return TargetPriority.PLANT_PLAYER;
+            case "NEAREST":
+                return TargetPriority.NEAREST;
+            default:
+                return TargetPriority.NONE;
+        }
     }
 }
 

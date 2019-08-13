@@ -4,13 +4,6 @@ using System.Collections.Generic;
 
 public abstract class EnemyTurnBehavior
 {
-    public static Dictionary<string, EnemyTurnBehavior> behaviors =
-        new Dictionary<string, EnemyTurnBehavior>()
-        {
-            {"APPROACH", new Approach() },
-            { "ATTACK", new Attack() }
-        };
-
     public readonly int priority;
 
     public EnemyTurnBehavior(int priority_)
@@ -21,5 +14,23 @@ public abstract class EnemyTurnBehavior
     public virtual void OnEnemyTurn(GridObject gridObject)
     {
 
+    }
+
+    public static EnemyTurnBehavior ParseBehaviorString(string behaviorString)
+    {
+        string[] splitBehaviorString = behaviorString.Split(',');
+        string baseBehaviorString = splitBehaviorString[0].ToUpper();
+        switch (baseBehaviorString)
+        {
+            case "ATTACK":
+                return new Attack(
+                    int.Parse(splitBehaviorString[1]), // move speed
+                    int.Parse(splitBehaviorString[2]), // damage
+                    int.Parse(splitBehaviorString[3]), // range
+                    Attack.GetTargetPriorityFromString(splitBehaviorString[4]) // target priority
+                    ); 
+            default:
+                return null;
+        }
     }
 }
