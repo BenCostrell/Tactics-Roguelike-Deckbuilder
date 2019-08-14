@@ -211,7 +211,7 @@ TextureImporter:
     second: colored_transparent_68
   - first:
       213: -388090503136385533
-    second: colored_transparent_69
+    second: sprouts
   - first:
       213: -9029065620080007359
     second: colored_transparent_70
@@ -616,7 +616,7 @@ TextureImporter:
     second: colored_transparent_203
   - first:
       213: 4843331519138432314
-    second: colored_transparent_204
+    second: sprouts
   - first:
       213: -2912555196029676863
     second: colored_transparent_205
@@ -5024,7 +5024,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_69
+      name: brush
       rect:
         serializedVersion: 2
         x: 102
@@ -7859,7 +7859,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_204
+      name: sprouts
       rect:
         serializedVersion: 2
         x: 221

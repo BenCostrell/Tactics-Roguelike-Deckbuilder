@@ -17,46 +17,40 @@ public class HealthBar : MonoBehaviour
     private Queue<HealthChangeAnimation> animQueue;
     private List<SpriteRenderer> srs;
     public bool doneAnimating { get { return animQueue.Count == 0 && animTimeRemaining <= 0; } }
+    private TileRenderer lastTileHovered;
 
     public void Initialize(GridObject gridObject)
     {
         //gameObject.name = "Health Bar";
         id = gridObject.id;
         srs = new List<SpriteRenderer>() { frontBar, backBar, animatedBar };
-        //transform.parent = gridObjectRenderer.transform;
-        //List<SpriteRenderer> spriteRenderers = new List<SpriteRenderer>();
-        //transform.localPosition = offset;
-
-        //frontBar = new GameObject().AddComponent<SpriteRenderer>();
-        //frontBar.gameObject.name = "Front Bar";
-        //spriteRenderers.Add(frontBar);
-        //frontBar.sortingOrder = 2;
-        //frontBar.color = Color.green;
-
-        //backBar = new GameObject().AddComponent<SpriteRenderer>();
-        //backBar.gameObject.name = "Back Bar";
-        //spriteRenderers.Add(backBar);
-        //backBar.sortingOrder = 0;
-        //backBar.color = Color.red;
-
-        //animatedBar = new GameObject().AddComponent<SpriteRenderer>();
-        //animatedBar.gameObject.name = "Animated Bar";
-        //spriteRenderers.Add(animatedBar);
-        //animatedBar.sortingOrder = 1;
-        //animatedBar.color = Color.yellow;
-        //animatedBar.transform.localScale = new Vector3(0, 1, 1);
-
-        //foreach(SpriteRenderer sr in spriteRenderers)
-        //{
-        //    sr.sortingLayerName = "UI";
-        //    sr.sprite = Resources.Load<SpriteAtlas>("SpriteData/UiAtlas").GetSprite("bar");
-        //    sr.transform.parent = transform;
-        //    sr.transform.localPosition = Vector3.zero;
-        //}
         animQueue = new Queue<HealthChangeAnimation>();
 
         Services.EventManager.Register<DamageTaken>(OnDamageTaken);
         Services.EventManager.Register<AttackAnimationComplete>(OnAttackAnimationComplete);
+        Services.EventManager.Register<InputHover>(OnInputHover);
+        gameObject.SetActive(false);
+        healthProportion = 1;
+    }
+
+    private void OnInputHover(InputHover e)
+    {
+        if (animTimeRemaining > 0) return;
+        if (lastTileHovered == e.hoveredTile) return;
+        lastTileHovered = e.hoveredTile;
+        if (e.hoveredTile == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+        List<GridObject> tileObjects = e.hoveredTile.tile.containedObjects;
+        if (tileObjects.Count == 0 || tileObjects[0].id != id)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+        gameObject.SetActive(true);
+
     }
 
     // Update is called once per frame
@@ -67,7 +61,7 @@ public class HealthBar : MonoBehaviour
 
     private void AnimateDamage()
     {
-        if(animTimeRemaining > 0)
+        if (animTimeRemaining > 0)
         {
             animTimeRemaining -= Time.deltaTime;
             float width = Mathf.Lerp(damageDistance, 0,
@@ -87,6 +81,8 @@ public class HealthBar : MonoBehaviour
         animTimeRemaining = damageAnimDuration;
         animatedBar.transform.localScale = new Vector3(damageDistance, 1, 1);
         animatedBar.transform.localPosition = new Vector3(healthProportion / 2, 0, 0);
+        gameObject.SetActive(true);
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
     }
 
     public void OnDamageTaken(DamageTaken e)
@@ -116,5 +112,12 @@ public class HealthBar : MonoBehaviour
         {
             sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, alpha);
         }
+    }
+
+    private void OnDestroy()
+    {
+        Services.EventManager.Unregister<DamageTaken>(OnDamageTaken);
+        Services.EventManager.Unregister<AttackAnimationComplete>(OnAttackAnimationComplete);
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
     }
 }

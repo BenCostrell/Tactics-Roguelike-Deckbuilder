@@ -39,7 +39,8 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
-        SpawnEnemies();
+        SpawnRandomObjects("GOBLIN", 2);
+        SpawnRandomObjects("BRUSH", 10);
         //Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
         _mapDisplayer.InitializeMapDisplay(map);
@@ -75,17 +76,16 @@ public class MapManager
         gridObject.SpawnOnTile(map[x, y]);
     }
 
-    private void SpawnEnemies()
+    private void SpawnRandomObjects(string objectName, int num)
     {
-        int numEnemies = 2;
-        while(numEnemies > 0)
+        while (num > 0)
         {
             int x = Random.Range(0, map.GetLength(0));
             int y = Random.Range(0, map.GetLength(1));
-            if(map[x,y].containedObjects.Count == 0)
+            if (map[x, y].containedObjects.Count == 0)
             {
-                CreateGridObject(x, y, "GOBLIN");
-                numEnemies -= 1;
+                CreateGridObject(x, y, objectName);
+                num -= 1;
             }
         }
     }

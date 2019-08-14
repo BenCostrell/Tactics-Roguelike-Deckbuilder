@@ -125,8 +125,10 @@ public class Attack : EnemyTurnBehavior
             default:
                 break;
         }
-
-        if (targetTile == null) return;
+        if (targetTile == null)
+        {
+            return;
+        }
         List<MapTile> pathToTarget = AStarSearch.ShortestPath(gridObject.currentTile,
             targetTile, gridObject);
         // trim the target tile itself
@@ -239,6 +241,7 @@ public class Attack : EnemyTurnBehavior
 
     public static TargetPriority GetTargetPriorityFromString(string priorityString)
     {
+        priorityString = priorityString.Trim();
         switch (priorityString)
         {
             case "ONLY_PLAYER":
