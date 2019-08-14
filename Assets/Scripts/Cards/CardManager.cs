@@ -120,7 +120,7 @@ public class CardManager
         for (int i = 0; i < hand.Count; i++)
         {
             Card card = hand[i];
-            if(card.id == id)
+            if (card.id == id)
             {
                 return i;
             }

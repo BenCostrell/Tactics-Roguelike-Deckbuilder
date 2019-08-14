@@ -30,7 +30,7 @@ public class NavArrow : MonoBehaviour
         {
             List<MapTile> playerAvailableGoals = AStarSearch.FindAllAvailableGoals(player.currentTile,
                 player.currentEnergy, player);
-            if(playerAvailableGoals.Contains(e.hoveredTile.tile))
+            if (playerAvailableGoals.Contains(e.hoveredTile.tile))
             {
                 lr.enabled = true;
                 arrow.enabled = true;
@@ -46,7 +46,7 @@ public class NavArrow : MonoBehaviour
                 }
                 lr.SetPositions(positions);
                 Vector3 diff = positions[positions.Length - 1] - positions[positions.Length - 2];
-                arrow.transform.localPosition = positions[positions.Length - 1] + (arrowOffset*diff);
+                arrow.transform.localPosition = positions[positions.Length - 1] + (arrowOffset * diff);
                 arrow.transform.localEulerAngles = new Vector3(0, 0,
                     -90 + Mathf.Rad2Deg * Mathf.Atan2(diff.y, diff.x));
             }
@@ -69,6 +69,5 @@ public class NavArrow : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
     }
 }

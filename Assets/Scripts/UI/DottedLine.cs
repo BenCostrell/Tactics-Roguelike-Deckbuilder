@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
+//[ExecuteAlways]
 public class DottedLine : MonoBehaviour
 {
     private LineRenderer lr;
@@ -12,6 +12,7 @@ public class DottedLine : MonoBehaviour
     private const float curveAngle = 20;
     private const float lineZ = -2;
     public Transform arrow;
+    private const float scrollSpeed = 2;
 
     // Start is called before the first frame update
     private void Start()
@@ -35,6 +36,7 @@ public class DottedLine : MonoBehaviour
         }
         //Vector3[] points = new Vector3[] { start, target };
         lr.SetPositions(points);
+        lr.material.mainTextureOffset = new Vector2(-Time.time * scrollSpeed, 0);
     }
 
     public void SetTarget(Vector3 start_, Vector3 target_)

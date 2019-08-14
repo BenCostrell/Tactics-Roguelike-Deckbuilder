@@ -39,8 +39,8 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
-        SpawnRandomObjects("GOBLIN", 2);
-        SpawnRandomObjects("BRUSH", 10);
+        SpawnRandomObjects("GOBLIN", 4);
+        SpawnRandomObjects("BRUSH", 14);
         //Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
         _mapDisplayer.InitializeMapDisplay(map);

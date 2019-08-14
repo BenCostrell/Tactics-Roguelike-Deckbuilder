@@ -11,6 +11,7 @@ public class CardRenderer : MonoBehaviour
     public TextMeshPro costText;
     public GameObject displayHolder;
     public DottedLine targetLine;
+    public SpriteRenderer highlight;
     private BoxCollider2D col;
     public int id { get; private set; }
     public Card card { get; private set; }
@@ -46,6 +47,7 @@ public class CardRenderer : MonoBehaviour
         transform.parent = cardHolder;
         baseScale = transform.localScale;
         targetLine.gameObject.SetActive(false);
+        highlight.enabled = false;
     }
 
     // Use this for initialization
@@ -91,8 +93,13 @@ public class CardRenderer : MonoBehaviour
     public void SetHandPos()
     {
         transform.localPosition = GetHandPos();
-        sortingGroup.sortingOrder = Services.CardManager.GetHandIndex(id);
         transform.localRotation = GetHandRot();
+        SetSortingOrder();
+    }
+
+    public void SetSortingOrder()
+    {
+        sortingGroup.sortingOrder = Services.CardManager.GetHandIndex(id);
     }
 
     public void SetHoverStatus(bool hovered)
@@ -130,6 +137,12 @@ public class CardRenderer : MonoBehaviour
                 child.gameObject.SetActive(!status);
             }
         }
+    }
+
+    public void SetHighlight(bool status, Color color)
+    {
+        highlight.enabled = status;
+        highlight.color = color;
     }
 }
 
@@ -241,7 +254,7 @@ public abstract class InHand : CardState
 {
     private Vector3 targetHandPos;
     private Quaternion targetHandRot;
-    private const float adjustDuration = 0.3f;
+    private const float adjustDuration = 0.5f;
     private float adjustTimeRemaining;
     private Vector3 prevHandPos;
     private Quaternion prevHandRot;
@@ -252,9 +265,11 @@ public abstract class InHand : CardState
         Services.EventManager.Register<InputHover>(OnInputHover);
         Services.EventManager.Register<CardEventQueued>(OnCardEventQueued);
         Services.EventManager.Register<CardDiscarded>(OnCardDiscarded);
+        Services.EventManager.Register<EnergyChanged>(OnEnergyChanged);
         prevHandRot = Context.transform.localRotation;
         prevHandPos = Context.transform.localPosition;
         adjustTimeRemaining = 0;
+        SetEnergyHighlight();
         //Debug.Log("card " + Context.id + " entering an in hand state");
     }
 
@@ -276,7 +291,7 @@ public abstract class InHand : CardState
         targetHandPos = Context.GetHandPos();
         targetHandRot = Context.GetHandRot();
         adjustTimeRemaining = adjustDuration;
-        //Debug.Log("resetting pos");
+        Context.SetSortingOrder();
     }
 
     public void OnCardEventQueued(CardEventQueued e)
@@ -293,12 +308,31 @@ public abstract class InHand : CardState
         
     }
 
+    private void OnEnergyChanged(EnergyChanged e)
+    {
+        SetEnergyHighlight();
+    }
+
+    protected void SetEnergyHighlight()
+    {
+        if (Services.LevelManager.player.currentEnergy >= Context.card.cost)
+        {
+            Context.SetHighlight(true, Color.green);
+        }
+        else
+        {
+            Context.SetHighlight(false, Color.white);
+        }
+    }
+
     public override void OnExit()
     {
         base.OnExit();
         Services.EventManager.Unregister<CardEventQueued>(OnCardEventQueued);
         Services.EventManager.Unregister<InputHover>(OnInputHover);
         Services.EventManager.Unregister<CardDiscarded>(OnCardDiscarded);
+        Services.EventManager.Unregister<EnergyChanged>(OnEnergyChanged);
+        Context.SetHighlight(false, Color.white);
         //Debug.Log("card " + Context.id + " exiting an in hand state");
     }
 }
@@ -345,6 +379,7 @@ public class Hovered : InHand
 
     public override void OnInputHover(InputHover e)
     {
+        base.OnInputHover(e);
         if (e.hoveredCard != Context)
         {
             TransitionTo<Unhovered>();
@@ -414,6 +449,17 @@ public class Selected : Hovered
             y = e.worldPos.y;
         }
         castThreshold = e.worldPos.y >= maxY;
+        if (!targeted)
+        {
+            if (castThreshold)
+            {
+                Context.SetHighlight(true, Color.blue);
+            }
+            else
+            {
+                SetEnergyHighlight();
+            }
+        }
         bool floatStop = castThreshold && targeted;
         float x = floatStop ? Context.transform.position.x : e.worldPos.x;
         Context.transform.position = new Vector3(x, y, 0f);
@@ -458,6 +504,7 @@ public class Selected : Hovered
         Services.EventManager.Unregister<InputUp>(OnInputUp);
         Services.EventManager.Unregister<InputDown>(OnInputDown);
         Services.EventManager.Fire(new CardSelectionStatusChange(false));
+        Context.SetHighlight(false, Color.white);
     }
 }
 
