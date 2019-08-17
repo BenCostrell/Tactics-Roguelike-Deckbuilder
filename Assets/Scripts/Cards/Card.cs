@@ -55,7 +55,6 @@ public class Card
         data = data_;
         bonusEffects = new List<CardEffect>();
         id = nextId;
-        Services.EventManager.Fire(new CardCreated(this));
     }
 
     public bool IsTargetLegal(MapTile target)

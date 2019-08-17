@@ -15,9 +15,10 @@ public class LevelManager : MonoBehaviour
     {
         Services.LevelManager = this;
         Services.EventManager = new GameEventsManager();
-        Services.GridObjectDataManager = new GridObjectDataManager();
-        Services.CardDataManager = new CardDataManager();
-        Services.TerrainDataManager = new TerrainDataManager();
+        if (Services.GridObjectDataManager == null) Services.GridObjectDataManager = new GridObjectDataManager();
+        if (Services.CardDataManager == null) Services.CardDataManager = new CardDataManager();
+        if (Services.TerrainDataManager == null) Services.TerrainDataManager = new TerrainDataManager();
+        SaveData.currentlyLoadedData.OnLevelLoad();
         _mapManager = new MapManager();
         if (Services.CardManager == null) Services.CardManager = new CardManager();
     }
@@ -61,4 +62,13 @@ public class PlayerTurnEnded : GameEvent
 public class PlayerTurnStarted : GameEvent
 {
 
+}
+
+public class LevelCompleted : GameEvent
+{
+    public readonly int levelNum;
+    public LevelCompleted(int levelNum_)
+    {
+        levelNum = levelNum_;
+    }
 }

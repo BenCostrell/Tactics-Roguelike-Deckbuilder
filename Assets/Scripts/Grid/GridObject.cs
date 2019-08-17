@@ -17,14 +17,14 @@ public class GridObject
     }
     public GridObjectData data { get; private set; }
 
-    public int maxHealth {  get { return data.maxHealth + _bonusMaxHealth; } }
-    private int _bonusMaxHealth;
-    public int currentHealth { get; private set; }
+    public int maxHealth { get; protected set; }
+    public int currentHealth { get; protected set; }
 
     public GridObject(GridObjectData data_)
     {
         id = nextId;
         data = data_;
+        maxHealth = data.maxHealth;
         currentHealth = maxHealth;
     }
 

@@ -20,7 +20,7 @@ public class Player : GridObject
         }
     }
     private int _currentMaxEnergy;
-    private int currentMaxEnergy
+    public int currentMaxEnergy
     {
         get { return _currentMaxEnergy; }
         set
@@ -36,7 +36,6 @@ public class Player : GridObject
             }
         }
     }
-    private const int BASEMAXENERGY = 3;
 
     public Player() : base(Services.GridObjectDataManager.GetData("PLAYER"))
     {
@@ -44,8 +43,10 @@ public class Player : GridObject
         Services.EventManager.Register<PlayerTurnStarted>(Refresh);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         Services.EventManager.Register<CardCast>(OnCardCast);
-        currentMaxEnergy = BASEMAXENERGY;
+        currentMaxEnergy = SaveData.currentlyLoadedData.maxEnergy;
         currentEnergy = currentMaxEnergy;
+        maxHealth = SaveData.currentlyLoadedData.maxHealth;
+        currentHealth = SaveData.currentlyLoadedData.currentHealth;
         Services.LevelManager.player = this;
     }
 

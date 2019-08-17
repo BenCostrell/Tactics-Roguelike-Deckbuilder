@@ -31,12 +31,15 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 8589081340543278931, guid: 8b2f830d76bae5043ade35a379ad3472, type: 3}
-    totalSpriteSurfaceArea: 256
+    - {fileID: 5632229701308644663, guid: 8b2f830d76bae5043ade35a379ad3472, type: 3}
+    totalSpriteSurfaceArea: 512
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 8589081340543278931, guid: 8b2f830d76bae5043ade35a379ad3472, type: 3}
+  - {fileID: 5632229701308644663, guid: 8b2f830d76bae5043ade35a379ad3472, type: 3}
   m_PackedSpriteNamesToIndex:
   - grass
+  - door
   m_Tag: TerrainSprites
   m_IsVariant: 0

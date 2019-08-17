@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class CardManager
 {
-    private List<Card> fullDeck;
     private List<Card> currentDeck;
     private List<Card> discardPile;
     private List<Card> hand;
@@ -19,15 +18,10 @@ public class CardManager
 
     public CardManager()
     {
-        fullDeck = new List<Card>();
         currentDeck = new List<Card>();
         discardPile = new List<Card>();
         hand = new List<Card>();
 
-        cardDisplayer = new CardDisplayer();
-
-        Services.EventManager.Register<CardCast>(OnCardCast);
-        Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
         // for testing, creating starting deck
         //CardData whackData = Services.CardDataManager.GetData("Whack");
         //for (int i = 0; i < 10; i++)
@@ -43,7 +37,7 @@ public class CardManager
             for (int i = 0; i < cardData.startingDeckCount; i++)
             {
                 Card card = new Card(cardData);
-                fullDeck.Add(card);
+                AcquireCard(card);
             }
         }
         //
@@ -56,13 +50,23 @@ public class CardManager
 
     public void OnLevelStart()
     {
-        currentDeck = new List<Card>(fullDeck);
+        cardDisplayer = new CardDisplayer();
+        currentDeck = new List<Card>(SaveData.currentlyLoadedData.deck);
+        discardPile.Clear();
+        hand.Clear();
+        foreach (Card card in currentDeck)
+        {
+            Services.EventManager.Fire(new CardCreated(card));
+        }
         DrawNewHand(true);
+        Services.EventManager.Register<CardCast>(OnCardCast);
+        Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
     }
 
     public void AcquireCard(Card card)
     {
         DiscardCard(card);
+        Services.EventManager.Fire(new CardAcquired(card));
     }
 
     public void DrawCard()
@@ -181,5 +185,14 @@ public class CardDiscarded : CardEvent
     {
         card = card_;
         discardPileCount = discardPileCount_;
+    }
+}
+
+public class CardAcquired : CardEvent
+{
+    public readonly Card card;
+    public CardAcquired(Card card_)
+    {
+        card = card_;
     }
 }

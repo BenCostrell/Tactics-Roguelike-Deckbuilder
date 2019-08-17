@@ -52,8 +52,16 @@ public class MapManager
         {
             for (int y = 0; y < height; y++)
             {
-                MapTile tile = new MapTile(x, y, 
-                    Services.TerrainDataManager.terrainDataDict["GRASS"]);
+                TerrainData terrainType;
+                if (x == width - 1 && y == height - 1)
+                {
+                    terrainType = Services.TerrainDataManager.terrainDataDict["DOOR"];
+                }
+                else
+                {
+                    terrainType = Services.TerrainDataManager.terrainDataDict["GRASS"];
+                }
+                MapTile tile = new MapTile(x, y, terrainType);
                 map[x, y] = tile;
             }
         }
@@ -82,7 +90,8 @@ public class MapManager
         {
             int x = Random.Range(0, map.GetLength(0));
             int y = Random.Range(0, map.GetLength(1));
-            if (map[x, y].containedObjects.Count == 0)
+            MapTile mapTile = map[x, y];
+            if (mapTile.containedObjects.Count == 0 && mapTile.terrain.terrainName != "DOOR")
             {
                 CreateGridObject(x, y, objectName);
                 num -= 1;

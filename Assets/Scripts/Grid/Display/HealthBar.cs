@@ -30,7 +30,8 @@ public class HealthBar : MonoBehaviour
         Services.EventManager.Register<AttackAnimationComplete>(OnAttackAnimationComplete);
         Services.EventManager.Register<InputHover>(OnInputHover);
         gameObject.SetActive(false);
-        healthProportion = 1;
+        healthProportion = (float)gridObject.currentHealth/gridObject.maxHealth;
+        frontBar.transform.localScale = new Vector3(healthProportion, 1, 1);
     }
 
     private void OnInputHover(InputHover e)

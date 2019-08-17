@@ -898,7 +898,7 @@ TextureImporter:
     second: colored_297
   - first:
       213: 5632229701308644663
-    second: colored_298
+    second: door
   - first:
       213: -5773176313020748794
     second: colored_299
@@ -9425,7 +9425,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_298
+      name: door
       rect:
         serializedVersion: 2
         x: 170

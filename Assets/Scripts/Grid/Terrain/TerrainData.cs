@@ -6,10 +6,12 @@ public struct TerrainData
 {
     public readonly string terrainName;
     public readonly Sprite sprite;
+    public readonly string description;
 
-    public TerrainData(string terrainName_, Sprite sprite_)
+    public TerrainData(string terrainName_, Sprite sprite_, string description_)
     {
         terrainName = terrainName_;
         sprite = sprite_;
+        description = description_;
     }
 }

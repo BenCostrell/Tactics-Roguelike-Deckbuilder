@@ -12,13 +12,21 @@ public class TerrainDataManager
     {
         terrainDataDict = new Dictionary<string, TerrainData>();
         atlas = Resources.Load<SpriteAtlas>("SpriteData/TerrainSprites");
-        //temporary, will ultimately load in from spreadsheet
-        AddData("GRASS");
+        TextAsset terrainDataDoc = Resources.Load<TextAsset>("Data/Terrain_Database");
+        string[] terrainDataEntries = terrainDataDoc.text.Split('\n');
+        for (int i = 1; i < terrainDataEntries.Length; i++)
+        {
+            string[] fields = terrainDataEntries[i].Split('\t');
+            AddData(
+                fields[0].ToUpper().Trim(), // name
+                fields[1] // description
+                );
+        }
     }
 
-    public void AddData(string name)
+    public void AddData(string name, string description)
     {
-        TerrainData terrainData = new TerrainData(name, atlas.GetSprite(name.ToLower()));
+        TerrainData terrainData = new TerrainData(name, atlas.GetSprite(name.ToLower()), description);
         terrainDataDict[name] = terrainData;
     }
 }

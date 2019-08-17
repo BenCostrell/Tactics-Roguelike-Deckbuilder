@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class Tooltip : MonoBehaviour
+public class UnitTooltip : MonoBehaviour
 {
     public TextMeshProUGUI nameText;
     public Image unitImage;
@@ -31,8 +31,7 @@ public class Tooltip : MonoBehaviour
             unitImage.sprite = gridObject.data.sprite;
             healthBarUI.SetActive(true);
             healthText.text = gridObject.currentHealth + "/" + gridObject.maxHealth;
-            healthBarFront.transform.localScale = new Vector3(
-                (float)gridObject.currentHealth / gridObject.maxHealth, 1, 1);
+            healthBarFront.fillAmount = (float)gridObject.currentHealth / gridObject.maxHealth;
             nameText.text = gridObject.data.gridObjectName;
         }
         else
