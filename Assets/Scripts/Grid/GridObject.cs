@@ -38,9 +38,9 @@ public class GridObject
     public void MoveToTile(List<MapTile> path)
     {
         MapTile originalTile = currentTile;
+        Services.EventManager.Fire(new GridObjectMoved(this, originalTile, path));
         ExitTile(originalTile);
         EnterTile(path[path.Count-1]);
-        Services.EventManager.Fire(new GridObjectMoved(this, originalTile, path));
     }
 
     private void EnterTile(MapTile mapTile)

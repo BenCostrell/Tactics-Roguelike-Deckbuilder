@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
     private MapManager _mapManager;
     [HideInInspector]
     public Player player;
+    public LevelTransitionAnimation levelTransition;
 
-    public bool waitForAnimation;
 
     private void Awake()
     {
@@ -21,6 +22,7 @@ public class LevelManager : MonoBehaviour
         SaveData.currentlyLoadedData.OnLevelLoad();
         _mapManager = new MapManager();
         if (Services.CardManager == null) Services.CardManager = new CardManager();
+        Services.EventManager.Register<TransitionAnimationComplete>(OnTransitionComplete);
     }
 
     private void Start()
@@ -34,7 +36,7 @@ public class LevelManager : MonoBehaviour
         Services.CardManager.Update();
         if (Input.GetKeyDown(KeyCode.R))
         {
-            ResetGame();
+            ReloadLevel();
         }
         //if (Input.GetKeyDown(KeyCode.Space))
         //{
@@ -48,9 +50,14 @@ public class LevelManager : MonoBehaviour
         Services.EventManager.Fire(new PlayerTurnStarted());
     }
 
-    private void ResetGame()
+    private void ReloadLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void OnTransitionComplete(TransitionAnimationComplete e)
+    {
+        ReloadLevel();
     }
 }
 

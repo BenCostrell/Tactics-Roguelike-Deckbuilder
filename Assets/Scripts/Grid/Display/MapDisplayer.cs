@@ -38,6 +38,7 @@ public class MapDisplayer
         Services.EventManager.Register<GridObjectSpawned>(OnGridObjectSpawned);
         Services.EventManager.Register<GridObjectMoved>(OnGridObjectMoved);
         Services.EventManager.Register<ObjectAttacked>(OnObjectAttacked);
+        Services.EventManager.Register<LevelCompleted>(OnLevelCompleted);
         foreach (MapTile tile in map)
         {
             foreach(GridObject gridObject in tile.containedObjects)
@@ -59,6 +60,11 @@ public class MapDisplayer
     }
 
     public void OnGridObjectMoved(GridObjectMoved e)
+    {
+        animationQueue.Enqueue(e);
+    }
+
+    public void OnLevelCompleted(LevelCompleted e)
     {
         animationQueue.Enqueue(e);
     }
@@ -88,15 +94,21 @@ public class MapDisplayer
         }
         GameEvent animationEvent = animationQueue.Dequeue();
         Type eventType = animationEvent.GetType();
-        if(eventType == typeof(GridObjectMoved))
+        if (eventType == typeof(GridObjectMoved))
         {
             GridObjectMoved movement = animationEvent as GridObjectMoved;
             gridObjectRenderers[movement.gridObject.id].MoveToTile(movement);
+            Debug.Log("starting movement");
         }
         else if (eventType == typeof(ObjectAttacked))
         {
             ObjectAttacked attack = animationEvent as ObjectAttacked;
             gridObjectRenderers[attack.attacker.id].Attack(attack);
+        }
+        else if (eventType == typeof(LevelCompleted))
+        {
+            Services.EventManager.Fire(new StartLevelTransitionAnimation());
+            Debug.Log("starting transition anim");
         }
         
         wasAnimating = true;
@@ -244,3 +256,5 @@ public class CardRange : MapDisplayState
         //Debug.Log("exiting card range at time " + Time.time);
     }
 }
+
+public class StartLevelTransitionAnimation : GameEvent { }

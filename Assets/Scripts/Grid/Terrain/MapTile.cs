@@ -31,6 +31,10 @@ public class MapTile
     public void OnObjectEnter(GridObject gridObject)
     {
         containedObjects.Add(gridObject);
+        if (gridObject.data.phylum == GridObjectData.Phylum.PLAYER && terrain.terrainName == "DOOR")
+        {
+            Services.EventManager.Fire(new LevelCompleted(SaveData.currentlyLoadedData.lastCompletedLevelNum + 1));
+        }
     }
 
     public void OnObjectExit(GridObject gridObject)
