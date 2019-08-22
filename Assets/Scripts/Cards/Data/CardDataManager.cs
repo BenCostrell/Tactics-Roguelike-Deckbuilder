@@ -22,7 +22,8 @@ public class CardDataManager
                 int.Parse(fields[1]), // cost
                 fields[2].Split(';'), // effects
                 fields[3],// text
-                int.Parse(fields[4]) // starting deck counts
+                CardData.rarityStringDict[fields[4].ToUpper().Trim()], // rarity
+                int.Parse(fields[5]) // starting deck counts
                 ); 
         }
         //temporary, will ultimately load in from spreadsheet
@@ -30,7 +31,7 @@ public class CardDataManager
         //    "Deal 1 damage to a target within 1 range.");
     }
 
-    private void AddData(string name, int cost, string[] cardEffectStrings, string text, int startingDeckCount)
+    private void AddData(string name, int cost, string[] cardEffectStrings, string text, CardData.Rarity rarity, int startingDeckCount)
     {
         List<CardEffect> effects = new List<CardEffect>();
         foreach(string effectString in cardEffectStrings)
@@ -38,7 +39,7 @@ public class CardDataManager
             CardEffect effect = CardEffect.ParseEffectString(effectString);
             if (effect != null) effects.Add(effect);
         }
-        CardData data = new CardData(name, cost, effects, text, atlas.GetSprite(name.ToLower()), startingDeckCount);
+        CardData data = new CardData(name, cost, effects, text, atlas.GetSprite(name.ToLower()), rarity, startingDeckCount);
         cardDataDict[name] = data;
     }
 
@@ -58,5 +59,15 @@ public class CardDataManager
             }
         }
         return startingDeckData;
+    }
+
+    public List<CardData> GetCardsOfRarity(CardData.Rarity rarity)
+    {
+        List<CardData> cards = new List<CardData>();
+        foreach(CardData cardData in cardDataDict.Values)
+        {
+            if (cardData.rarity == rarity) cards.Add(cardData);
+        }
+        return cards;
     }
 }

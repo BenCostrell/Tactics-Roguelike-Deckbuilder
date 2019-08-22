@@ -20,6 +20,8 @@ public class GridObject
     public int maxHealth { get; protected set; }
     public int currentHealth { get; protected set; }
 
+    public bool opened;
+
     public GridObject(GridObjectData data_)
     {
         id = nextId;
@@ -66,7 +68,14 @@ public class GridObject
 
     protected virtual void OnSpawn()
     {
+        Services.EventManager.Register<InputDown>(OnInputDown);
+    }
 
+    protected virtual void OnInputDown(InputDown e)
+    {
+        if (e.hoveredTile == null || e.hoveredTile.tile != currentTile || 
+            Services.LevelManager.player.currentTile.coord.Distance(currentTile.coord) != 1) return;
+        OnInteract();
     }
 
     public void TakeDamage(int damage)
@@ -81,7 +90,16 @@ public class GridObject
     public void Die()
     {
         currentTile.OnObjectExit(this);
+        Services.EventManager.Unregister<InputDown>(OnInputDown);
         Services.EventManager.Fire(new GridObjectDeath(id));
+    }
+
+    public void OnInteract()
+    {
+        foreach (ObjectInteraction interaction in data.interactions)
+        {
+            interaction.OnInteract(this);
+        }
     }
 }
 

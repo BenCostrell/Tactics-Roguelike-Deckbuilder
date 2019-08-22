@@ -39,7 +39,8 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
-        SpawnRandomObjects("GOBLIN", 4);
+        SpawnChest(6, 6);
+        SpawnRandomObjects("GOBLIN", 3);
         SpawnRandomObjects("BRUSH", 14);
         //Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
@@ -95,6 +96,23 @@ public class MapManager
             {
                 CreateGridObject(x, y, objectName);
                 num -= 1;
+            }
+        }
+    }
+
+    private void SpawnChest(int minDistFromPlayer, int minDistFromExit)
+    {
+        int maxTries = 1000;
+        for (int i = 0; i < maxTries; i++)
+        {
+            int x = Random.Range(0, map.GetLength(0));
+            int y = Random.Range(0, map.GetLength(1));
+            MapTile mapTile = map[x, y];
+            if(mapTile.containedObjects.Count == 0 && mapTile.coord.Distance(new Coord(0,0)) >= minDistFromPlayer 
+                && mapTile.coord.Distance(new Coord(width-1, height-1)) >= minDistFromExit)
+            {
+                CreateGridObject(x, y, "CHEST");
+                return;
             }
         }
     }

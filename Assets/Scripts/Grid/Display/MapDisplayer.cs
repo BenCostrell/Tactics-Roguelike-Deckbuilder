@@ -98,7 +98,7 @@ public class MapDisplayer
         {
             GridObjectMoved movement = animationEvent as GridObjectMoved;
             gridObjectRenderers[movement.gridObject.id].MoveToTile(movement);
-            Debug.Log("starting movement");
+            //Debug.Log("starting movement");
         }
         else if (eventType == typeof(ObjectAttacked))
         {

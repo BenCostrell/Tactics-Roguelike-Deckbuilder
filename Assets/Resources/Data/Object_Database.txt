@@ -1,4 +1,5 @@
-Name	Phylum	Health	Behaviors
-Player	PLAYER	3	
-Goblin	ENEMY	1	ATTACK,2,1,1,PLAYER_PLANT
-Brush	PLANT	1	
+Name	Phylum	Health	Behaviors	On Interaction
+Player	PLAYER	3		
+Goblin	ENEMY	1	ATTACK,2,1,1,PLAYER_PLANT	
+Brush	PLANT	1		
+Chest	PLANT	2		GET_CARD,COMMON

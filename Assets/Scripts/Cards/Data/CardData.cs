@@ -28,14 +28,24 @@ public struct CardData
         }
     }
     public readonly int startingDeckCount;
+    public enum Rarity {  Basic, Common, Uncommon, Rare }
+    public readonly Rarity rarity;
+    public static Dictionary<string, Rarity> rarityStringDict = new Dictionary<string, Rarity>()
+    {
+        {"BASIC", Rarity.Basic },
+        { "COMMON", Rarity.Common },
+        { "UNCOMMON", Rarity.Uncommon },
+        { "RARE", Rarity.Rare}
+    };
 
-    public CardData(string name_, int cost_, List<CardEffect> effects_, string text_, Sprite sprite_, int startingDeckCount_)
+    public CardData(string name_, int cost_, List<CardEffect> effects_, string text_, Sprite sprite_, Rarity rarity_, int startingDeckCount_)
     {
         name = name_;
         cost = cost_;
         effects = effects_;
         rawText = text_;
         sprite = sprite_;
+        rarity = rarity_;
         startingDeckCount = startingDeckCount_;
     }
 }

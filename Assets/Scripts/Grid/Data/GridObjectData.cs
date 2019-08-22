@@ -8,17 +8,18 @@ public struct GridObjectData
     public readonly Sprite sprite;
     public readonly int maxHealth;
     public readonly List<EnemyTurnBehavior> enemyTurnBehaviors;
-
+    public readonly List<ObjectInteraction> interactions;
     public enum Phylum { NONE, ENEMY, PLANT, PLAYER }
     public readonly Phylum phylum;
 
     public GridObjectData(string gridObjectName_, Sprite sprite_, int maxHealth_,
-        List<EnemyTurnBehavior> enemyTurnBehaviors_, Phylum phylum_)
+        List<EnemyTurnBehavior> enemyTurnBehaviors_, List<ObjectInteraction> interactions_, Phylum phylum_)
     {
         gridObjectName = gridObjectName_;
         sprite = sprite_;
         maxHealth = maxHealth_;
         enemyTurnBehaviors = enemyTurnBehaviors_;
+        interactions = interactions_;
         phylum = phylum_;
     }
 

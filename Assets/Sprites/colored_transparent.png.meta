@@ -601,7 +601,7 @@ TextureImporter:
     second: colored_transparent_198
   - first:
       213: -4343436406771531980
-    second: colored_transparent_199
+    second: chest
   - first:
       213: 8208436769420484140
     second: colored_transparent_200
@@ -7754,7 +7754,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_199
+      name: chest
       rect:
         serializedVersion: 2
         x: 136
