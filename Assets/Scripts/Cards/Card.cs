@@ -81,6 +81,11 @@ public class Card
         if (!IsTargetLegal(target)) return false;
         return true;
     }
+
+    public void Destroy()
+    {
+        Services.EventManager.Fire(new CardDestroyed(this));
+    }
 }
 
 public class CardCast : CardEvent
@@ -98,7 +103,18 @@ public class CardCast : CardEvent
 public class CardCreated : GameEvent
 {
     public readonly Card card;
-    public CardCreated(Card card_)
+    public readonly Transform chestCardHolder;
+    public CardCreated(Card card_, Transform chestCardHolder_)
+    {
+        card = card_;
+        chestCardHolder = chestCardHolder_;
+    }
+}
+
+public class CardDestroyed : GameEvent
+{
+    public readonly Card card;
+    public CardDestroyed(Card card_)
     {
         card = card_;
     }

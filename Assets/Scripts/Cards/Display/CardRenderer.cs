@@ -32,8 +32,10 @@ public class CardRenderer : MonoBehaviour
         }
     }
     public MapTile currentTarget;
+    public Transform cardHolder { get; private set; }
+    public int offerOrder;
 
-    public void Init(Card card_, Transform cardHolder)
+    public void Init(Card card_, Transform cardHolder_)
     {
         card = card_;
         id = card.id;
@@ -44,10 +46,12 @@ public class CardRenderer : MonoBehaviour
         col = GetComponentInChildren<BoxCollider2D>();
         stateMachine = new StateMachine<CardRenderer>(this);
         stateMachine.InitializeState<Inactive>();
+        cardHolder = cardHolder_;
         transform.parent = cardHolder;
         baseScale = transform.localScale;
         targetLine.gameObject.SetActive(false);
         highlight.enabled = false;
+        Services.EventManager.Register<CardDestroyed>(OnCardDestroyed);
     }
 
     // Use this for initialization
@@ -144,6 +148,16 @@ public class CardRenderer : MonoBehaviour
         highlight.enabled = status;
         highlight.color = color;
     }
+
+    private void OnCardDestroyed(CardDestroyed e)
+    {
+        if (e.card == card)
+        {
+            stateMachine.currentState.OnExit();
+            Services.EventManager.Unregister<CardDestroyed>(OnCardDestroyed);
+            Destroy(gameObject);
+        }
+    }
 }
 
 public abstract class CardState : StateMachine<CardRenderer>.State {
@@ -156,6 +170,12 @@ public class Inactive : WaitingToAnimate
     {
         base.OnEnter();
         Context.displayHolder.SetActive(false);
+        Services.EventManager.Register<CardOffered>(OnCardOffered);
+    }
+
+    private void OnCardOffered(CardOffered e)
+    {
+        TransitionTo<Offered>();
     }
 
     public override void OnAnimationStart(StartCardAnimation e)
@@ -170,6 +190,49 @@ public class Inactive : WaitingToAnimate
     {
         base.OnExit();
         Context.displayHolder.SetActive(true);
+        Services.EventManager.Unregister<CardOffered>(OnCardOffered);
+    }
+}
+
+public class Offered : CardState
+{
+    private readonly Vector3 offeredScale = new Vector3(1.3f, 1.3f, 1f);
+    private readonly float offerSpacing = 3.2f;
+
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Context.transform.localScale = offeredScale;
+        Context.SetAnimationSortingStatus(true);
+        Context.transform.localPosition = (Context.offerOrder - 1) * offerSpacing * Vector3.right;
+        Services.EventManager.Register<InputHover>(OnInputHover);
+        Services.EventManager.Register<InputDown>(OnInputDown);
+    }
+
+    private void OnInputHover(InputHover e)
+    {
+        if (e.hoveredCard == Context)
+        {
+            Context.SetHighlight(true, Color.green);
+        }
+        else
+        {
+            Context.SetHighlight(false, Color.white);
+        }
+    }
+
+    private void OnInputDown(InputDown e)
+    {
+        if (e.cardSelected != Context) return;
+        Services.EventManager.Fire(new CardOfferSelected(Context.card));
+        TransitionTo<BeingDiscarded>();
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<InputDown>(OnInputDown);
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
     }
 }
 
@@ -423,7 +486,7 @@ public class Selected : Hovered
     public override void Update()
     {
         base.Update();
-        if(clickWindowCountdown > 0)
+        if (clickWindowCountdown > 0)
         {
             clickWindowCountdown -= Time.deltaTime;
         }
@@ -531,7 +594,7 @@ public class BeingDiscarded : Animating
     public override void OnEnter()
     {
         base.OnEnter();
-        cardHolder = Context.transform.parent;
+        cardHolder = Context.cardHolder;
         Context.transform.parent = DiscardPileUI.frameTransform;
         startScale = Context.transform.localScale;
         startPos = Context.transform.localPosition;
@@ -605,6 +668,15 @@ public class CardSelectionStatusChange : GameEvent
     public CardSelectionStatusChange(bool cardSelected_)
     {
         cardSelected = cardSelected_;
+    }
+}
+
+public class CardOfferSelected: GameEvent
+{
+    public readonly Card card;
+    public CardOfferSelected(Card card_)
+    {
+        card = card_;
     }
 }
 

@@ -41,6 +41,7 @@ public class CardManager
             }
         }
         //
+        Services.EventManager.Register<CardOfferSelected>(OnCardOfferSelected);
     }
 
     public void Update()
@@ -56,11 +57,19 @@ public class CardManager
         hand.Clear();
         foreach (Card card in currentDeck)
         {
-            Services.EventManager.Fire(new CardCreated(card));
+            Services.EventManager.Fire(new CardCreated(card, null));
         }
         DrawNewHand(true);
         Services.EventManager.Register<CardCast>(OnCardCast);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
+    }
+
+    private void OnCardOfferSelected(CardOfferSelected e)
+    {
+        if (e.card != null)
+        {
+            AcquireCard(e.card);
+        }
     }
 
     public void AcquireCard(Card card)

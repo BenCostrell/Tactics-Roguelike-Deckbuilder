@@ -19,6 +19,7 @@ public class CardDisplayer
         cardRendererPrefab = Resources.Load<CardRenderer>("Prefabs/CardRenderer");
         animationQueue = new Queue<CardEventQueued>();
         Services.EventManager.Register<CardCreated>(OnCardCreated);
+        Services.EventManager.Register<CardDestroyed>(OnCardDestroyed);
         Services.EventManager.Register<CardEventQueued>(QueueCardEvent);
         Services.EventManager.Register<CardAnimationComplete>(OnCardAnimationComplete);
         waitingForAnimation = false;
@@ -45,7 +46,20 @@ public class CardDisplayer
         CardRenderer cardRenderer = GameObject.Instantiate(cardRendererPrefab, cardHolder).
             GetComponent<CardRenderer>();
         cardRenderers.Add(cardRenderer);
-        cardRenderer.Init(e.card, cardHolder);
+        Transform cardParent = e.chestCardHolder == null ? cardHolder : e.chestCardHolder;
+        cardRenderer.Init(e.card, cardParent);
+    }
+
+    public void OnCardDestroyed(CardDestroyed e)
+    {
+        foreach (CardRenderer cardRenderer in cardRenderers)
+        {
+            if(cardRenderer.id == e.card.id)
+            {
+                cardRenderers.Remove(cardRenderer);
+                break;
+            }
+        }
     }
 
     private void ProcessAnimationQueue()

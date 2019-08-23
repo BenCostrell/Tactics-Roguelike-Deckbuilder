@@ -28,9 +28,19 @@ public class GetCard : ObjectInteraction
             possibleCards.Remove(card);
             offeredCards.Add(card);
         }
-        foreach(CardData card in offeredCards)
+        Services.EventManager.Fire(new ChestOpened(offeredCards));
+        foreach (CardData card in offeredCards)
         {
             Debug.Log("offering " + card.name);
         }
+    }
+}
+
+public class ChestOpened : GameEvent
+{
+    public readonly List<CardData> offeredCards;
+    public ChestOpened(List<CardData> offeredCards_)
+    {
+        offeredCards = offeredCards_;
     }
 }
