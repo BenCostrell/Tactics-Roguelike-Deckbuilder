@@ -40,6 +40,7 @@ public class ChestViewer : MonoBehaviour
         }
         offeredCards.Clear();
         Services.EventManager.Unregister<CardOfferSelected>(OnOfferSelected);
+        gameObject.SetActive(false);
     }
 
     // Update is called once per frame

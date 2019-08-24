@@ -35,7 +35,7 @@ public class CardRenderer : MonoBehaviour
     public Transform cardHolder { get; private set; }
     public int offerOrder;
 
-    public void Init(Card card_, Transform cardHolder_)
+    public void Init(Card card_, Transform parent, Transform cardHolder_)
     {
         card = card_;
         id = card.id;
@@ -47,7 +47,7 @@ public class CardRenderer : MonoBehaviour
         stateMachine = new StateMachine<CardRenderer>(this);
         stateMachine.InitializeState<Inactive>();
         cardHolder = cardHolder_;
-        transform.parent = cardHolder;
+        transform.parent = parent;
         baseScale = transform.localScale;
         targetLine.gameObject.SetActive(false);
         highlight.enabled = false;
@@ -175,7 +175,10 @@ public class Inactive : WaitingToAnimate
 
     private void OnCardOffered(CardOffered e)
     {
+        if (e.card != Context.card) return;
         TransitionTo<Offered>();
+        Context.offerOrder = e.offerOrder;
+        Debug.Log("offer order " + e.offerOrder);
     }
 
     public override void OnAnimationStart(StartCardAnimation e)
@@ -196,13 +199,13 @@ public class Inactive : WaitingToAnimate
 
 public class Offered : CardState
 {
-    private readonly Vector3 offeredScale = new Vector3(1.3f, 1.3f, 1f);
+    private readonly float offeredScale = 2;
     private readonly float offerSpacing = 3.2f;
 
     public override void OnEnter()
     {
         base.OnEnter();
-        Context.transform.localScale = offeredScale;
+        Context.transform.localScale = offeredScale * Vector3.one;
         Context.SetAnimationSortingStatus(true);
         Context.transform.localPosition = (Context.offerOrder - 1) * offerSpacing * Vector3.right;
         Services.EventManager.Register<InputHover>(OnInputHover);
@@ -223,8 +226,11 @@ public class Offered : CardState
 
     private void OnInputDown(InputDown e)
     {
-        if (e.cardSelected != Context) return;
+        if (e.hoveredCard != Context) return;
+        Context.transform.parent = Context.cardHolder;
         Services.EventManager.Fire(new CardOfferSelected(Context.card));
+        Debug.Log(Context.card.data.name + " selected");
+
         TransitionTo<BeingDiscarded>();
     }
 
@@ -601,6 +607,7 @@ public class BeingDiscarded : Animating
         startRot = Context.transform.localRotation;
         timeElapsed = 0;
         staggerFired = false;
+        Debug.Log("discarding " + Context.card.data.name);
     }
 
     public override void Update()
@@ -617,6 +624,7 @@ public class BeingDiscarded : Animating
         {
             staggerFired = true;
             Services.EventManager.Fire(new CardAnimationComplete());
+            Debug.Log("moving on from discarding " + Context.card.data.name);
         }
         if (timeElapsed > discardAnimationDuration)
         {

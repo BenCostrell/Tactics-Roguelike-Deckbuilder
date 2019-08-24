@@ -47,7 +47,7 @@ public class CardDisplayer
             GetComponent<CardRenderer>();
         cardRenderers.Add(cardRenderer);
         Transform cardParent = e.chestCardHolder == null ? cardHolder : e.chestCardHolder;
-        cardRenderer.Init(e.card, cardParent);
+        cardRenderer.Init(e.card, cardParent, cardHolder);
     }
 
     public void OnCardDestroyed(CardDestroyed e)

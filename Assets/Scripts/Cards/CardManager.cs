@@ -12,8 +12,8 @@ public class CardManager
 
     public int handCount { get { return hand.Count; } }
 
-    private const int marginalCardsPerTurn = 2;
-    private const int maxStartingCards = 6;
+    private const int marginalCardsPerTurn = 1;
+    private const int maxStartingCards = 5;
     private const int openingHandSize = 3;
 
     public CardManager()
@@ -41,7 +41,6 @@ public class CardManager
             }
         }
         //
-        Services.EventManager.Register<CardOfferSelected>(OnCardOfferSelected);
     }
 
     public void Update()
@@ -62,6 +61,7 @@ public class CardManager
         DrawNewHand(true);
         Services.EventManager.Register<CardCast>(OnCardCast);
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnded);
+        Services.EventManager.Register<CardOfferSelected>(OnCardOfferSelected);
     }
 
     private void OnCardOfferSelected(CardOfferSelected e)
@@ -76,6 +76,7 @@ public class CardManager
     {
         DiscardCard(card);
         Services.EventManager.Fire(new CardAcquired(card));
+        Debug.Log("acquiring " + card.data.name);
     }
 
     public void DrawCard()
