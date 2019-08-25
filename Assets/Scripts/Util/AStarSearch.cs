@@ -63,7 +63,7 @@ public static class AStarSearch
     }
 
     public static List<MapTile> FindAllAvailableGoals(MapTile start, int movesAvailable, 
-        GridObject gridObject, bool raw = false, int minRange = 0)
+        GridObject gridObject, bool raw = false, int minRange = 0, bool ignoreEnemies = false)
     {
         List<MapTile> availableGoals = new List<MapTile>();
         if (movesAvailable == 0) return availableGoals;
@@ -82,11 +82,11 @@ public static class AStarSearch
             {
                 if (current != start && Coord.Distance(current.coord, start.coord) >= minRange)
                     availableGoals.Add(current);
-                if (gridObject.IsTilePassable(current) || raw)
+                if (gridObject.IsTilePassable(current, raw, ignoreEnemies))
                 {
                     foreach (MapTile next in current.neighbors)
                     {
-                        if (gridObject.IsTilePassable(next) || raw)
+                        if (gridObject.IsTilePassable(next, raw, ignoreEnemies))
                         {
                             int newCost;
                             newCost = costSoFar[current] + 1;

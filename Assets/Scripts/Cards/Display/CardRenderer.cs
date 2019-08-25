@@ -178,7 +178,6 @@ public class Inactive : WaitingToAnimate
         if (e.card != Context.card) return;
         TransitionTo<Offered>();
         Context.offerOrder = e.offerOrder;
-        Debug.Log("offer order " + e.offerOrder);
     }
 
     public override void OnAnimationStart(StartCardAnimation e)
@@ -607,7 +606,6 @@ public class BeingDiscarded : Animating
         startRot = Context.transform.localRotation;
         timeElapsed = 0;
         staggerFired = false;
-        Debug.Log("discarding " + Context.card.data.name);
     }
 
     public override void Update()
@@ -624,7 +622,6 @@ public class BeingDiscarded : Animating
         {
             staggerFired = true;
             Services.EventManager.Fire(new CardAnimationComplete());
-            Debug.Log("moving on from discarding " + Context.card.data.name);
         }
         if (timeElapsed > discardAnimationDuration)
         {

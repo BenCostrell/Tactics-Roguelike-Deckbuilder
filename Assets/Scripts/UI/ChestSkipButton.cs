@@ -18,7 +18,6 @@ public class ChestSkipButton : SpriteButton
     protected override void OnHover(InputHover e)
     {
         base.OnHover(e);
-        Debug.Log("skip hover");
         if(e.hoveredButton != this)
         {
             sr.color = Color.white;
@@ -50,7 +49,6 @@ public abstract class SpriteButton : MonoBehaviour {
     private void OnInputHover(InputHover e)
     {
         OnHover(e);
-        Debug.Log("base class hover");
     }
 
     private void OnInputDown(InputDown e)

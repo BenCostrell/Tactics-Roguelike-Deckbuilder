@@ -17,6 +17,7 @@ public class MapDisplayer
     private StateMachine<MapDisplayer> stateMachine;
     private NavArrow navArrow;
     public Card hoveredCard;
+    public GridObject hoveredEnemy;
 
     public void InitializeMapDisplay(MapTile[,] map)
     {
@@ -108,7 +109,6 @@ public class MapDisplayer
         else if (eventType == typeof(LevelCompleted))
         {
             Services.EventManager.Fire(new StartLevelTransitionAnimation());
-            Debug.Log("starting transition anim");
         }
         
         wasAnimating = true;
@@ -139,10 +139,85 @@ public abstract class MapDisplayState : StateMachine<MapDisplayer>.State
         TransitionTo<CardRange>();
     }
 
+
+
     public override void OnExit()
     {
         base.OnExit();
         Services.EventManager.Unregister<CardRendererHoverStart>(OnCardHoverStart);
+
+        foreach (TileRenderer tileRenderer in Context.tileRenderers)
+        {
+            tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+        }
+    }
+}
+
+public class EnemyRange : MapDisplayState
+{
+    public override void OnEnter()
+    {
+        base.OnEnter();
+        Services.EventManager.Register<InputHover>(OnInputHover);
+        int moveRange = 0;
+        int attackRange = 0;
+        foreach(EnemyTurnBehavior enemyTurnBehavior in Context.hoveredEnemy.data.enemyTurnBehaviors)
+        {
+            if(enemyTurnBehavior is Attack)
+            {
+                Attack attack = enemyTurnBehavior as Attack;
+                moveRange = attack.moveSpeed;
+                attackRange = attack.range;
+            }
+        }
+        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(Context.hoveredEnemy.currentTile,
+            moveRange, Context.hoveredEnemy, false, 0, true);
+        bool inAnyRange = false;
+        foreach (TileRenderer tileRenderer in Context.tileRenderers)
+        {
+            if(tileRenderer.tile == Context.hoveredEnemy.currentTile)
+            {
+                tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+                continue;
+            }
+            if (tilesInRange.Contains(tileRenderer.tile))
+            {
+                tileRenderer.SetRangeColor(TileRenderer.RangeLevel.MOVE);
+                inAnyRange = true;
+            }
+            else 
+            {
+                foreach(MapTile tileInRange in tilesInRange)
+                {
+                    if(Coord.Distance(tileInRange.coord, tileRenderer.tile.coord) <= attackRange)
+                    {
+                        tileRenderer.SetRangeColor(TileRenderer.RangeLevel.ATTACK);
+                        inAnyRange = true;
+                        break;
+                    }
+                }
+            }
+            if(!inAnyRange)
+            {
+                tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
+            }
+        }
+    }
+
+    private void OnInputHover(InputHover e)
+    {
+        if(e.hoveredTile == null ||
+            e.hoveredTile.tile.containedObjects.Count == 0 ||
+            e.hoveredTile.tile.containedObjects[0] != Context.hoveredEnemy)
+        {
+            TransitionTo<PlayerRange>();
+        }
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
     }
 }
 
@@ -155,6 +230,7 @@ public class PlayerRange : MapDisplayState
         Services.EventManager.Register<EnergyChanged>(OnEnergyChanged);
         Services.EventManager.Register<GridObjectMoved>(OnGridObjectMoved);
         Services.EventManager.Register<GridObjectDeath>(OnGridObjectDeath);
+        Services.EventManager.Register<InputHover>(OnInputHover);
         //Debug.Log("entering player range at time " + Time.time);
     }
 
@@ -191,11 +267,29 @@ public class PlayerRange : MapDisplayState
         }
     }
 
+    protected virtual void OnInputHover(InputHover e)
+    {
+        if (e.hoveredTile != null)
+        {
+            if (e.hoveredTile.tile.containedObjects.Count > 0)
+            {
+                GridObject gridObject = e.hoveredTile.tile.containedObjects[0];
+                if (gridObject.data.phylum == GridObjectData.Phylum.ENEMY)
+                {
+                    Context.hoveredEnemy = gridObject;
+                    TransitionTo<EnemyRange>();
+                }
+            }
+        }
+    }
+
     public override void OnExit()
     {
         base.OnExit();
         Services.EventManager.Unregister<EnergyChanged>(OnEnergyChanged);
         Services.EventManager.Unregister<GridObjectMoved>(OnGridObjectMoved);
+        Services.EventManager.Unregister<GridObjectDeath>(OnGridObjectDeath);
+        Services.EventManager.Unregister<InputHover>(OnInputHover);
         //Debug.Log("exiting player range at time " + Time.time);
     }
 }
@@ -205,10 +299,6 @@ public class NoRangeDisplay : MapDisplayState
     public override void OnEnter()
     {
         base.OnEnter();
-        foreach(TileRenderer tileRenderer in Context.tileRenderers)
-        {
-            tileRenderer.SetRangeColor(TileRenderer.RangeLevel.NONE);
-        }
         Services.EventManager.Register<GridObjectMovementComplete>(OnMovementComplete);
     }
 

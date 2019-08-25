@@ -29,10 +29,10 @@ public class GetCard : ObjectInteraction
             offeredCards.Add(card);
         }
         Services.EventManager.Fire(new ChestOpened(offeredCards));
-        foreach (CardData card in offeredCards)
-        {
-            Debug.Log("offering " + card.name);
-        }
+        //foreach (CardData card in offeredCards)
+        //{
+        //    Debug.Log("offering " + card.name);
+        //}
     }
 }
 

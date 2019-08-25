@@ -76,7 +76,6 @@ public class CardManager
     {
         DiscardCard(card);
         Services.EventManager.Fire(new CardAcquired(card));
-        Debug.Log("acquiring " + card.data.name);
     }
 
     public void DrawCard()
