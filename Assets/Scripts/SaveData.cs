@@ -24,6 +24,8 @@ public class SaveData
     public List<Card> deck;
     public int lastCompletedLevelNum;
     private const int BASE_MAX_ENERGY = 3;
+    public LevelData[,] levelDatas;
+    public const int levelsPerRun = 7;
 
     public SaveData()
     {
@@ -32,6 +34,15 @@ public class SaveData
         maxHealth = Services.GridObjectDataManager.GetData("PLAYER").maxHealth;
         currentHealth = maxHealth;
         lastCompletedLevelNum = 0;
+        levelDatas = new LevelData[levelsPerRun, levelsPerRun];
+        levelDatas[0, 0] = new LevelData(1, new IntVector2(6, 6),
+            new List<GridObjectSpawnData>(){
+                new GridObjectSpawnData(Services.GridObjectDataManager.GetData("GOBLIN"),2) },
+            new List<GridObjectSpawnData>(){
+                new GridObjectSpawnData( Services.GridObjectDataManager.GetData("BRUSH"),10) },
+            new List<GridObjectSpawnData>() {
+                new GridObjectSpawnData(Services.GridObjectDataManager.GetData("CHEST"), 1)});
+
         Debug.Log("creating new save data");
     }
 

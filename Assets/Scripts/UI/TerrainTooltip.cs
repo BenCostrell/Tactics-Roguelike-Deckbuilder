@@ -15,7 +15,8 @@ public class TerrainTooltip : MonoBehaviour
     {
         nameText.text = "";
         descriptionText.text = "";
-        terrainImage.enabled = false;
+        //terrainImage.enabled = false;
+        gameObject.SetActive(false);
         Services.EventManager.Register<InputHover>(OnInputHover);
     }
 
@@ -23,17 +24,19 @@ public class TerrainTooltip : MonoBehaviour
     {
         if (e.hoveredTile != null)
         {
+            gameObject.SetActive(true);
             TerrainData terrainData = e.hoveredTile.tile.terrain;
-            terrainImage.enabled = true;
+            //terrainImage.enabled = true;
             terrainImage.sprite = terrainData.sprite;
             nameText.text = terrainData.terrainName;
             descriptionText.text = terrainData.description;
         }
         else
         {
-            nameText.text = "";
-            descriptionText.text = "";
-            terrainImage.enabled = false;
+            gameObject.SetActive(false);
+            //nameText.text = "";
+            //descriptionText.text = "";
+            //terrainImage.enabled = false;
         }
     }
 }

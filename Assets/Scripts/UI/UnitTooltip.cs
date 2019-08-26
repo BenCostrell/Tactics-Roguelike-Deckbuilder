@@ -17,8 +17,9 @@ public class UnitTooltip : MonoBehaviour
     {
         nameText.text = "";
         healthText.text = "";
-        unitImage.enabled = false;
-        healthBarUI.SetActive(false);
+        //unitImage.enabled = false;
+        //healthBarUI.SetActive(false);
+        gameObject.SetActive(false);
         Services.EventManager.Register<InputHover>(OnInputHover);
     }
 
@@ -26,20 +27,22 @@ public class UnitTooltip : MonoBehaviour
     {
         if (e.hoveredTile != null && e.hoveredTile.tile.containedObjects.Count > 0)
         {
+            gameObject.SetActive(true);
             GridObject gridObject = e.hoveredTile.tile.containedObjects[0];
-            unitImage.enabled = true;
+            //unitImage.enabled = true;
             unitImage.sprite = gridObject.data.sprite;
-            healthBarUI.SetActive(true);
+            //healthBarUI.SetActive(true);
             healthText.text = gridObject.currentHealth + "/" + gridObject.maxHealth;
             healthBarFront.fillAmount = (float)gridObject.currentHealth / gridObject.maxHealth;
             nameText.text = gridObject.data.gridObjectName;
         }
         else
         {
-            nameText.text = "";
-            healthText.text = "";
-            unitImage.enabled = false;
-            healthBarUI.SetActive(false);
+            gameObject.SetActive(false);
+            //nameText.text = "";
+            //healthText.text = "";
+            //unitImage.enabled = false;
+            //healthBarUI.SetActive(false);
         }
     }
 

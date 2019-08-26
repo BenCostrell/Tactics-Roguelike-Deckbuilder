@@ -55,4 +55,18 @@ public class GridObjectDataManager
     {
         return gridObjectDataDict[name.ToUpper()];
     }
+
+    public List<GridObjectData> GetEnemies()
+    {
+        List<GridObjectData> enemies = new List<GridObjectData>();
+        foreach(GridObjectData gridObjectData in gridObjectDataDict.Values)
+        {
+            if(gridObjectData.phylum == GridObjectData.Phylum.ENEMY)
+            {
+                enemies.Add(gridObjectData);
+            }
+        }
+
+        return enemies;
+    }
 }

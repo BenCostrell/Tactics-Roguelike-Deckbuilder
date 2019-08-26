@@ -661,7 +661,7 @@ TextureImporter:
     second: colored_transparent_218
   - first:
       213: 5304976422540298122
-    second: colored_transparent_219
+    second: ghoul
   - first:
       213: -1232236602768344969
     second: colored_transparent_220
@@ -8174,7 +8174,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_219
+      name: ghoul
       rect:
         serializedVersion: 2
         x: 476
