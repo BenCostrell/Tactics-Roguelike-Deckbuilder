@@ -844,7 +844,7 @@ TextureImporter:
     second: colored_transparent_279
   - first:
       213: 982701606790655212
-    second: colored_transparent_280
+    second: octopus
   - first:
       213: 266077901525755959
     second: colored_transparent_281
@@ -9455,7 +9455,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_280
+      name: octopus
       rect:
         serializedVersion: 2
         x: 425

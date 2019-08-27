@@ -26,6 +26,7 @@ public class SaveData
     private const int BASE_MAX_ENERGY = 3;
     public LevelData[,] levelDatas;
     public const int levelsPerRun = 7;
+    public LevelData currentLevel;
 
     public SaveData()
     {
@@ -42,7 +43,7 @@ public class SaveData
                 new GridObjectSpawnData( Services.GridObjectDataManager.GetData("BRUSH"),10) },
             new List<GridObjectSpawnData>() {
                 new GridObjectSpawnData(Services.GridObjectDataManager.GetData("CHEST"), 1)});
-
+        currentLevel = levelDatas[0, 0];
         Debug.Log("creating new save data");
     }
 
@@ -74,6 +75,7 @@ public class SaveData
     private void OnLevelCompleted(LevelCompleted e)
     {
         lastCompletedLevelNum = e.levelNum;
+        currentLevel.completed = true;
     }
 
     private void OnCardAcquired(CardAcquired e)

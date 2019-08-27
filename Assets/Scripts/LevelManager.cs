@@ -57,7 +57,8 @@ public class LevelManager : MonoBehaviour
 
     private void OnTransitionComplete(TransitionAnimationComplete e)
     {
-        ReloadLevel();
+        //ReloadLevel();
+        SceneManager.LoadScene(1);
     }
 }
 

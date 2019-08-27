@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Main.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/Overmap.unity
+    guid: fa4b43e198c89be4a8f80b7c76a710fb
   m_configObjects: {}

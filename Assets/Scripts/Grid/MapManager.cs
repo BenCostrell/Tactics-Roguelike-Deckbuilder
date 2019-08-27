@@ -16,13 +16,10 @@ public class MapManager
     private MapDisplayer _mapDisplayer;
     private EnemyTurnManager _enemyTurnManager;
 
-    // set to constants for now, will probably pull values from somewhere eventually
-    private const int width = 8;
-    private const int height = 6;
-
     public MapManager()
     {
-        InitializeMap(width, height);
+        InitializeMap(SaveData.currentlyLoadedData.currentLevel.size.x, 
+            SaveData.currentlyLoadedData.currentLevel.size.y);
         _enemyTurnManager = new EnemyTurnManager();
         Services.EventManager.Register<PlayerTurnEnded>(OnPlayerTurnEnd);
         Services.EventManager.Register<GridObjectDeath>(OnGridObjectDeath);
@@ -39,9 +36,20 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
-        SpawnChest(6, 6);
-        SpawnRandomObjects("GOBLIN", 3);
-        SpawnRandomObjects("BRUSH", 14);
+        foreach (GridObjectSpawnData rewardSpawn in SaveData.currentlyLoadedData.currentLevel.rewardSpawns)
+        {
+            //for now always spawn chest
+            int dist = ((map.GetLength(0) + map.GetLength(1)) / 2) - 1; 
+            SpawnChest(dist, dist);
+        }
+        foreach (GridObjectSpawnData enemySpawn in SaveData.currentlyLoadedData.currentLevel.enemySpawns)
+        {
+            SpawnRandomObjects(enemySpawn.gridObjectData.gridObjectName, enemySpawn.numToSpawn);
+        }
+        foreach (GridObjectSpawnData vegetationSpawn in SaveData.currentlyLoadedData.currentLevel.vegetationSpawns)
+        {
+            SpawnRandomObjects(vegetationSpawn.gridObjectData.gridObjectName, vegetationSpawn.numToSpawn);
+        }
         //Services.EventManager.Register<InputDown>(OnInputDown);
         _mapDisplayer = new MapDisplayer();
         _mapDisplayer.InitializeMapDisplay(map);
@@ -109,7 +117,7 @@ public class MapManager
             int y = Random.Range(0, map.GetLength(1));
             MapTile mapTile = map[x, y];
             if(mapTile.containedObjects.Count == 0 && mapTile.coord.Distance(new Coord(0,0)) >= minDistFromPlayer 
-                && mapTile.coord.Distance(new Coord(width-1, height-1)) >= minDistFromExit)
+                && mapTile.coord.Distance(new Coord(map.GetLength(0)-1, map.GetLength(1)-1)) >= minDistFromExit)
             {
                 CreateGridObject(x, y, "CHEST");
                 return;

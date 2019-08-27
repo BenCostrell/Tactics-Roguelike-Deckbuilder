@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class OvermapTile : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class OvermapTile : MonoBehaviour
     public SpriteRenderer[] enemyTypeSrs;
     public SpriteRenderer[] rewardSrs;
 
-    public void Init(LevelData levelData_)
+    public void Init(LevelData levelData_, Coord coord)
     {
         levelData = levelData_;
         //for now all terrain is grass
@@ -18,10 +19,11 @@ public class OvermapTile : MonoBehaviour
             if (i < levelData.enemySpawns.Count)
             {
                 enemyTypeSrs[i].sprite = levelData.enemySpawns[i].gridObjectData.sprite;
+                enemyTypeSrs[i].GetComponentInChildren<TextMeshPro>().text = levelData.enemySpawns[i].numToSpawn.ToString();
             }
             else
             {
-                enemyTypeSrs[i].enabled = false;
+                enemyTypeSrs[i].gameObject.SetActive(false);
             }
         }
         for (int i = 0; i < rewardSrs.Length; i++)
@@ -29,12 +31,14 @@ public class OvermapTile : MonoBehaviour
             if (i < levelData.rewardSpawns.Count)
             {
                 rewardSrs[i].sprite = levelData.rewardSpawns[i].gridObjectData.sprite;
+                rewardSrs[i].GetComponentInChildren<TextMeshPro>().text = levelData.rewardSpawns[i].numToSpawn.ToString();
             }
             else
             {
-                rewardSrs[i].enabled = false;
+                rewardSrs[i].gameObject.SetActive(false);
             }
         }
+        transform.localPosition = new Vector3(coord.x, coord.y);
     }
 
 }
