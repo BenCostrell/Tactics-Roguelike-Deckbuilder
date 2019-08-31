@@ -19,7 +19,6 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         //Debug.DrawRay(ray.origin, ray.direction);

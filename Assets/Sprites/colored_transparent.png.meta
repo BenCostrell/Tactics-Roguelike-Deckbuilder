@@ -1519,7 +1519,7 @@ TextureImporter:
     second: colored_transparent_504
   - first:
       213: 8477307962038262274
-    second: colored_transparent_505
+    second: option_reticle
   - first:
       213: 2420282689128469038
     second: colored_transparent_506
@@ -13322,8 +13322,8 @@ TextureImporter:
       name: colored_transparent_464
       rect:
         serializedVersion: 2
-        x: 289
-        y: 289
+        x: 329
+        y: 311
         width: 16
         height: 16
       alignment: 0
@@ -14180,7 +14180,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_505
+      name: option_reticle
       rect:
         serializedVersion: 2
         x: 442

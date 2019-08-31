@@ -22,6 +22,7 @@ public class LevelTransitionAnimation : MonoBehaviour
 
     private void StartAnimation(StartLevelTransitionAnimation e)
     {
+        Services.EventManager.Unregister<StartLevelTransitionAnimation>(StartAnimation);
         transitionTimeRemaining = transitionDuration + leadOutDuration;
     }
 

@@ -32,14 +32,17 @@ SpriteAtlas:
     packables:
     - {fileID: 7290773615788488110, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
     - {fileID: 21300000, guid: a9fc211057664f341946115f4f084566, type: 3}
-    totalSpriteSurfaceArea: 512
+    - {fileID: 8477307962038262274, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    totalSpriteSurfaceArea: 768
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: a9fc211057664f341946115f4f084566, type: 3}
+  - {fileID: 8477307962038262274, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   - {fileID: 7290773615788488110, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   m_PackedSpriteNamesToIndex:
   - bar
+  - option_reticle
   - reticle1
   m_Tag: UiAtlas
   m_IsVariant: 0
