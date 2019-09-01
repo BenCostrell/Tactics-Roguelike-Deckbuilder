@@ -38,13 +38,17 @@ public class MapManager
         CreateGridObject(0, 0, new Player());
         foreach (GridObjectSpawnData rewardSpawn in SaveData.currentlyLoadedData.currentLevel.rewardSpawns)
         {
+            int dist = ((map.GetLength(0) + map.GetLength(1)) / 2) - 1;
             //for now always spawn chest
-            int dist = ((map.GetLength(0) + map.GetLength(1)) / 2) - 1; 
-            SpawnChest(dist, dist);
+            for (int i = 0; i < rewardSpawn.numToSpawn; i++)
+            {
+                SpawnChest(dist, dist);
+            }
+            
         }
         foreach (GridObjectSpawnData enemySpawn in SaveData.currentlyLoadedData.currentLevel.enemySpawns)
         {
-            SpawnRandomObjects(enemySpawn.gridObjectData.gridObjectName, enemySpawn.numToSpawn);
+            SpawnRandomObjects(enemySpawn.gridObjectData.gridObjectName, enemySpawn.numToSpawn, 2);
         }
         foreach (GridObjectSpawnData vegetationSpawn in SaveData.currentlyLoadedData.currentLevel.vegetationSpawns)
         {
@@ -93,7 +97,7 @@ public class MapManager
         gridObject.SpawnOnTile(map[x, y]);
     }
 
-    private void SpawnRandomObjects(string objectName, int num)
+    private void SpawnRandomObjects(string objectName, int num, int minDistFromEnemies = 1)
     {
         while (num > 0)
         {
@@ -102,8 +106,21 @@ public class MapManager
             MapTile mapTile = map[x, y];
             if (mapTile.containedObjects.Count == 0 && mapTile.terrain.terrainName != "DOOR")
             {
-                CreateGridObject(x, y, objectName);
-                num -= 1;
+                bool tooClose = false;
+                foreach (GridObject gridObject in gridObjectList)
+                {
+                    if(gridObject.data.phylum == GridObjectData.Phylum.ENEMY &&
+                        Coord.Distance(gridObject.currentTile.coord, new Coord(x,y)) < minDistFromEnemies)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (!tooClose)
+                {
+                    CreateGridObject(x, y, objectName);
+                    num -= 1;
+                }
             }
         }
     }

@@ -36,11 +36,11 @@ public class SaveData
         currentHealth = maxHealth;
         lastCompletedLevelNum = 0;
         levelDatas = new LevelData[levelsPerRun, levelsPerRun];
-        levelDatas[0, 0] = new LevelData(1, new IntVector2(6, 6),
+        levelDatas[0, 0] = new LevelData(1, new IntVector2(5, 5),
             new List<GridObjectSpawnData>(){
-                new GridObjectSpawnData(Services.GridObjectDataManager.GetData("GOBLIN"),2) },
+                new GridObjectSpawnData(Services.GridObjectDataManager.GetData("GOBLIN"),1) },
             new List<GridObjectSpawnData>(){
-                new GridObjectSpawnData( Services.GridObjectDataManager.GetData("BRUSH"),10) },
+                new GridObjectSpawnData( Services.GridObjectDataManager.GetData("BRUSH"),7) },
             new List<GridObjectSpawnData>() {
                 new GridObjectSpawnData(Services.GridObjectDataManager.GetData("CHEST"), 1)});
         currentLevel = levelDatas[0, 0];
