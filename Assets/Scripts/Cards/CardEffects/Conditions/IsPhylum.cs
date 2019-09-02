@@ -14,10 +14,8 @@ public class IsPhylum : Condition
 
     public override bool Evaluate(MapTile target)
     {
-        foreach(GridObject gridObject in target.containedObjects)
-        {
-            if (allowedPhyla.Contains(gridObject.data.phylum)) return true;
-        }
+        if (target.containedObject != null &&
+            allowedPhyla.Contains(target.containedObject.data.phylum)) return true;
         return false;
     }
 }

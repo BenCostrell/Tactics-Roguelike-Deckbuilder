@@ -25,10 +25,10 @@ public class UnitTooltip : MonoBehaviour
 
     public void OnInputHover(InputHover e)
     {
-        if (e.hoveredTile != null && e.hoveredTile.tile.containedObjects.Count > 0)
+        if (e.hoveredTile != null && e.hoveredTile.tile.containedObject != null)
         {
             gameObject.SetActive(true);
-            GridObject gridObject = e.hoveredTile.tile.containedObjects[0];
+            GridObject gridObject = e.hoveredTile.tile.containedObject;
             //unitImage.enabled = true;
             unitImage.sprite = gridObject.data.sprite;
             //healthBarUI.SetActive(true);

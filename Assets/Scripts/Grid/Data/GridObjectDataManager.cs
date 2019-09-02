@@ -22,7 +22,8 @@ public class GridObjectDataManager
                 GridObjectData.StringToPhylum(fields[1]), // phylum
                 int.Parse(fields[2]), // health
                 fields[3].Split(';'), // behaviors
-                fields[4].Split(';') //interactions
+                fields[4].Split(';'), // interactions
+                int.Parse(fields[5]) // target priority
                 );
         }
         //temporary, will ultimately load in from spreadsheet
@@ -32,7 +33,7 @@ public class GridObjectDataManager
     }
 
     private void AddData(string name, GridObjectData.Phylum phylum,
-        int maxHealth, string[] behaviorStrings, string[] interactionStrings)
+        int maxHealth, string[] behaviorStrings, string[] interactionStrings, int targetPriority)
     {
         List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>();
         foreach(string behaviorString in behaviorStrings)
@@ -47,7 +48,7 @@ public class GridObjectDataManager
             if (interaction != null) interactions.Add(interaction);
         }
         GridObjectData gridObjectData = new GridObjectData(name.ToUpper(),
-            atlas.GetSprite(name.ToLower()), maxHealth, behaviors, interactions, phylum);
+            atlas.GetSprite(name.ToLower()), maxHealth, behaviors, interactions, phylum, targetPriority);
         gridObjectDataDict[gridObjectData.gridObjectName] = gridObjectData;
     }
 

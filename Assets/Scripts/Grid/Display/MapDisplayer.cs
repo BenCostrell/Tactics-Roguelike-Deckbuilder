@@ -42,10 +42,7 @@ public class MapDisplayer
         Services.EventManager.Register<LevelCompleted>(OnLevelCompleted);
         foreach (MapTile tile in map)
         {
-            foreach(GridObject gridObject in tile.containedObjects)
-            {
-                Services.EventManager.Fire(new GridObjectSpawned(gridObject, tile));
-            }
+            Services.EventManager.Fire(new GridObjectSpawned(tile.containedObject, tile));
         }
         GameObject reticleObj = new GameObject();
         reticle = reticleObj.AddComponent<Reticle>();
@@ -207,8 +204,8 @@ public class EnemyRange : MapDisplayState
     private void OnInputHover(InputHover e)
     {
         if(e.hoveredTile == null ||
-            e.hoveredTile.tile.containedObjects.Count == 0 ||
-            e.hoveredTile.tile.containedObjects[0] != Context.hoveredEnemy)
+            e.hoveredTile.tile.containedObject == null ||
+            e.hoveredTile.tile.containedObject != Context.hoveredEnemy)
         {
             TransitionTo<PlayerRange>();
         }
@@ -271,9 +268,9 @@ public class PlayerRange : MapDisplayState
     {
         if (e.hoveredTile != null)
         {
-            if (e.hoveredTile.tile.containedObjects.Count > 0)
+            if (e.hoveredTile.tile.containedObject !=null)
             {
-                GridObject gridObject = e.hoveredTile.tile.containedObjects[0];
+                GridObject gridObject = e.hoveredTile.tile.containedObject;
                 if (gridObject.data.phylum == GridObjectData.Phylum.ENEMY)
                 {
                     Context.hoveredEnemy = gridObject;

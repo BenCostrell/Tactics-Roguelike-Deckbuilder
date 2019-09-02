@@ -11,9 +11,11 @@ public struct GridObjectData
     public readonly List<ObjectInteraction> interactions;
     public enum Phylum { NONE, ENEMY, PLANT, PLAYER }
     public readonly Phylum phylum;
+    public readonly int targetPriority;
 
     public GridObjectData(string gridObjectName_, Sprite sprite_, int maxHealth_,
-        List<EnemyTurnBehavior> enemyTurnBehaviors_, List<ObjectInteraction> interactions_, Phylum phylum_)
+        List<EnemyTurnBehavior> enemyTurnBehaviors_, List<ObjectInteraction> interactions_, 
+        Phylum phylum_, int targetPriority_)
     {
         gridObjectName = gridObjectName_;
         sprite = sprite_;
@@ -21,6 +23,7 @@ public struct GridObjectData
         enemyTurnBehaviors = enemyTurnBehaviors_;
         interactions = interactions_;
         phylum = phylum_;
+        targetPriority = targetPriority_;
     }
 
     public static Phylum StringToPhylum(string str)

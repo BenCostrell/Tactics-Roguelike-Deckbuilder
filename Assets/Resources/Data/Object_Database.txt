@@ -1,7 +1,7 @@
-Name	Phylum	Health	Behaviors	On Interaction
-Player	PLAYER	10		
-Goblin	ENEMY	1	ATTACK,2,1,1,PLAYER_PLANT	
-Brush	PLANT	1		
-Chest	PLANT	2		GET_CARD,COMMON
-Ghoul	ENEMY	2	ATTACK,1,1,1,PLAYER_PLANT	
-Octopus	ENEMY	1	ATTACK,1,1,2,PLAYER_PLANT	
+Name	Phylum	Health	Behaviors	On Interaction	Target Priority
+Player	PLAYER	10			100
+Goblin	ENEMY	1	ATTACK,2,1,1		0
+Brush	PLANT	1			20
+Chest	PLANT	2		GET_CARD,COMMON	50
+Ghoul	ENEMY	2	ATTACK,1,1,1		0
+Octopus	ENEMY	1	ATTACK,1,1,2		0

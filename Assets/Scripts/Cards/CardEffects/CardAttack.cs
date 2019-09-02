@@ -14,20 +14,16 @@ public class CardAttack : CardEffect
     public override void Execute(MapTile target)
     {
         base.Execute(target);
-        List<GridObject> tileObjects = new List<GridObject>(target.containedObjects);
-        foreach(GridObject gridObject in tileObjects)
-        {
-            gridObject.TakeDamage(damage);
-            // for now, no animation
-            Services.EventManager.Fire(new AttackAnimationComplete(gridObject.id));
-        }
+        target.containedObject.TakeDamage(damage);
+        // for now, no animation
+        Services.EventManager.Fire(new AttackAnimationComplete(target.containedObject.id));
     }
 
     public override bool IsTargetLegal(MapTile target)
     {
         bool baseLegal = base.IsTargetLegal(target);
         if (!baseLegal) return false;
-        if (target.containedObjects.Count == 0) return false;
+        if (target.containedObject == null) return false;
         return true;
     }
 }

@@ -36,13 +36,26 @@ public class MapManager
         map = CreateMap(width, height);
         _gridObjects = new Dictionary<int, GridObject>();
         CreateGridObject(0, 0, new Player());
+
+        bool farCornerOccupied = false;
         foreach (GridObjectSpawnData rewardSpawn in SaveData.currentlyLoadedData.currentLevel.rewardSpawns)
         {
             int dist = ((map.GetLength(0) + map.GetLength(1)) / 2) - 1;
             //for now always spawn chest
             for (int i = 0; i < rewardSpawn.numToSpawn; i++)
             {
-                SpawnChest(dist, dist);
+                //SpawnChest(dist, dist);
+
+                // just put em in the corners?
+                if (!farCornerOccupied)
+                {
+                    farCornerOccupied = true;
+                    CreateGridObject(width - 1, 0, rewardSpawn.gridObjectData.gridObjectName);
+                }
+                else
+                {
+                    CreateGridObject(0, height - 1, rewardSpawn.gridObjectData.gridObjectName);
+                }
             }
             
         }
@@ -104,7 +117,7 @@ public class MapManager
             int x = Random.Range(0, map.GetLength(0));
             int y = Random.Range(0, map.GetLength(1));
             MapTile mapTile = map[x, y];
-            if (mapTile.containedObjects.Count == 0 && mapTile.terrain.terrainName != "DOOR")
+            if (mapTile.containedObject == null && mapTile.terrain.terrainName != "DOOR")
             {
                 bool tooClose = false;
                 foreach (GridObject gridObject in gridObjectList)
@@ -133,7 +146,7 @@ public class MapManager
             int x = Random.Range(0, map.GetLength(0));
             int y = Random.Range(0, map.GetLength(1));
             MapTile mapTile = map[x, y];
-            if(mapTile.containedObjects.Count == 0 && mapTile.coord.Distance(new Coord(0,0)) >= minDistFromPlayer 
+            if(mapTile.containedObject == null && mapTile.coord.Distance(new Coord(0,0)) >= minDistFromPlayer 
                 && mapTile.coord.Distance(new Coord(map.GetLength(0)-1, map.GetLength(1)-1)) >= minDistFromExit)
             {
                 CreateGridObject(x, y, "CHEST");
@@ -168,4 +181,28 @@ public class MapTileSelected : GameEvent
         mapTile = mapTile_;
         selectedCardId = selectedCardId_;
     }
+}
+
+public class ProvisionalBoardState
+{
+    public GridObjectData[,] objectMap;
+
+    public ProvisionalBoardState(MapTile[,] map)
+    {
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+        objectMap = new GridObjectData[width, height];
+        for (int x  = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                GridObject gridObject = map[x, y].containedObject;
+                if (gridObject != null)
+                {
+                    objectMap[x, y] = map[x, y].containedObject.data;
+                }
+            }
+        }
+    }
+
 }

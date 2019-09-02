@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MapTile
 {
-    public List<GridObject> containedObjects { get; private set; }
+    public GridObject containedObject { get; private set; }
     public List<MapTile> neighbors { get; private set; }
     public readonly Coord coord;
     public readonly TerrainData terrain;
@@ -13,7 +13,6 @@ public class MapTile
     {
         coord = new Coord(x, y);
         terrain = terrain_;
-        containedObjects = new List<GridObject>();
         neighbors = new List<MapTile>();
     }
 
@@ -30,7 +29,7 @@ public class MapTile
 
     public void OnObjectEnter(GridObject gridObject)
     {
-        containedObjects.Add(gridObject);
+        containedObject = gridObject;
         if (gridObject.data.phylum == GridObjectData.Phylum.PLAYER && terrain.terrainName == "DOOR")
         {
             Services.EventManager.Fire(new LevelCompleted(SaveData.currentlyLoadedData.lastCompletedLevelNum + 1));
@@ -39,6 +38,6 @@ public class MapTile
 
     public void OnObjectExit(GridObject gridObject)
     {
-        containedObjects.Remove(gridObject);
+        containedObject = null;
     }
 }

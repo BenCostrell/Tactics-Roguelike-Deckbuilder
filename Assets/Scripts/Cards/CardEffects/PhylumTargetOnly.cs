@@ -14,10 +14,8 @@ public class PhylumTargetOnly : CardEffect
     public override bool IsTargetLegal(MapTile target)
     {
         if (!base.IsTargetLegal(target)) return false;
-        foreach (GridObject gridObject in target.containedObjects)
-        {
-            if (allowedPhyla.Contains(gridObject.data.phylum)) return true;
-        }
+        if(target.containedObject != null &&
+            allowedPhyla.Contains(target.containedObject.data.phylum)) return true;
         return false;
     }
 }

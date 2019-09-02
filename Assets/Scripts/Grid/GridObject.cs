@@ -58,18 +58,16 @@ public class GridObject
 
     public virtual bool IsTilePassable(MapTile mapTile, bool raw = false, bool ignoreEnemies = false)
     {
-        List<GridObject> effectivelyContainedObjects = new List<GridObject>(mapTile.containedObjects);
+        GridObject effectivelyContainedObject = mapTile.containedObject;
         if (ignoreEnemies)
         {
-            foreach(GridObject gridObject in mapTile.containedObjects)
+            if (effectivelyContainedObject != null &&
+                effectivelyContainedObject.data.phylum == GridObjectData.Phylum.ENEMY)
             {
-                if(gridObject.data.phylum == GridObjectData.Phylum.ENEMY)
-                {
-                    effectivelyContainedObjects.Remove(gridObject);
-                }
+                effectivelyContainedObject = null;
             }
         }
-        return raw || effectivelyContainedObjects.Count == 0 || mapTile == currentTile;
+        return raw || effectivelyContainedObject == null || mapTile == currentTile;
     }
 
     protected bool IsTileReachable(int moves, List<MapTile> path)

@@ -7,15 +7,12 @@ public class Attack : EnemyTurnBehavior
     public readonly int moveSpeed;
     public readonly int damage;
     public readonly int range;
-    public enum TargetPriority { ONLY_PLAYER, ONLY_PLANT, PLAYER_PLANT, PLANT_PLAYER, NEAREST, NONE }
-    public readonly TargetPriority targetPriority;
 
-    public Attack(int moveSpeed_, int damage_, int range_, TargetPriority targetPriority_) : base(2)
+    public Attack(int moveSpeed_, int damage_, int range_) : base(2)
     {
         moveSpeed = moveSpeed_;
         damage = damage_;
         range = range_;
-        targetPriority = targetPriority_;
     }
 
     public override void OnEnemyTurn(GridObject gridObject)
@@ -24,6 +21,10 @@ public class Attack : EnemyTurnBehavior
         PerformAttack(gridObject);
     }
 
+    public GridObject GetCurrentTarget()
+    {
+
+    }
 
     private void Approach(GridObject gridObject)
     {
@@ -45,7 +46,7 @@ public class Attack : EnemyTurnBehavior
             {
                 playerInRange = true;
             }
-            foreach (GridObject gridObj in tile.containedObjects)
+            foreach (GridObject gridObj in tile.containedObject)
             {
                 if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
                 {
@@ -65,7 +66,7 @@ public class Attack : EnemyTurnBehavior
         {
             foreach (MapTile tile in allAvailableTiles)
             {
-                foreach (GridObject gridObj in tile.containedObjects)
+                foreach (GridObject gridObj in tile.containedObject)
                 {
                     if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
                     {
@@ -165,7 +166,7 @@ public class Attack : EnemyTurnBehavior
             {
                 playerInRange = true;
             }
-            foreach (GridObject gridObj in tile.containedObjects)
+            foreach (GridObject gridObj in tile.containedObject)
             {
                 if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
                 {
@@ -239,25 +240,6 @@ public class Attack : EnemyTurnBehavior
 
     }
 
-    public static TargetPriority GetTargetPriorityFromString(string priorityString)
-    {
-        priorityString = priorityString.Trim();
-        switch (priorityString)
-        {
-            case "ONLY_PLAYER":
-                return TargetPriority.ONLY_PLAYER;
-            case "ONLY_PLANT":
-                return TargetPriority.ONLY_PLANT;
-            case "PLAYER_PLANT":
-                return TargetPriority.PLAYER_PLANT;
-            case "PLANT_PLAYER":
-                return TargetPriority.PLANT_PLAYER;
-            case "NEAREST":
-                return TargetPriority.NEAREST;
-            default:
-                return TargetPriority.NONE;
-        }
-    }
 }
 
 public class ObjectAttacked : GameEvent
@@ -272,4 +254,10 @@ public class ObjectAttacked : GameEvent
         target = target_;
         damage = damage_;
     }
+}
+
+public class PlannedAttack
+{
+    public readonly List<MapTile> path;
+    public readonly MapTile attackTarget;
 }

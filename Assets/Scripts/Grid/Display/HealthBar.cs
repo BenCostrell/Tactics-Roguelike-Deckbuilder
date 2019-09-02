@@ -44,8 +44,8 @@ public class HealthBar : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-        List<GridObject> tileObjects = e.hoveredTile.tile.containedObjects;
-        if (tileObjects.Count == 0 || tileObjects[0].id != id)
+        GridObject tileObject = e.hoveredTile.tile.containedObject;
+        if (tileObject == null || tileObject.id != id)
         {
             gameObject.SetActive(false);
             return;

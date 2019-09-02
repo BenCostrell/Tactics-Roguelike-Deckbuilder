@@ -26,8 +26,7 @@ public abstract class EnemyTurnBehavior
                 return new Attack(
                     int.Parse(splitBehaviorString[1]), // move speed
                     int.Parse(splitBehaviorString[2]), // damage
-                    int.Parse(splitBehaviorString[3]), // range
-                    Attack.GetTargetPriorityFromString(splitBehaviorString[4]) // target priority
+                    int.Parse(splitBehaviorString[3]) // range
                     ); 
             default:
                 return null;
