@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
-    private MapManager _mapManager;
+    public MapManager mapManager { get; private set; }
     [HideInInspector]
     public Player player;
     public LevelTransitionAnimation levelTransition;
@@ -20,7 +20,7 @@ public class LevelManager : MonoBehaviour
         if (Services.CardDataManager == null) Services.CardDataManager = new CardDataManager();
         if (Services.TerrainDataManager == null) Services.TerrainDataManager = new TerrainDataManager();
         SaveData.currentlyLoadedData.OnLevelLoad();
-        _mapManager = new MapManager();
+        mapManager = new MapManager();
         if (Services.CardManager == null) Services.CardManager = new CardManager();
         Services.EventManager.Register<TransitionAnimationComplete>(OnTransitionComplete);
     }
@@ -32,7 +32,7 @@ public class LevelManager : MonoBehaviour
 
     private void Update()
     {
-        _mapManager.Update();
+        mapManager.Update();
         Services.CardManager.Update();
         if (Input.GetKeyDown(KeyCode.R))
         {

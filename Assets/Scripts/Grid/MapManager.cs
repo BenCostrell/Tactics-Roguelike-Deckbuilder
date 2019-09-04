@@ -6,7 +6,7 @@ public class MapManager
 {
     public MapTile[,] map { get; private set; }
     private Dictionary<int, GridObject> _gridObjects;
-    private List<GridObject> gridObjectList
+    public List<GridObject> gridObjectList
     {
         get
         {
@@ -181,28 +181,4 @@ public class MapTileSelected : GameEvent
         mapTile = mapTile_;
         selectedCardId = selectedCardId_;
     }
-}
-
-public class ProvisionalBoardState
-{
-    public GridObjectData[,] objectMap;
-
-    public ProvisionalBoardState(MapTile[,] map)
-    {
-        int width = map.GetLength(0);
-        int height = map.GetLength(1);
-        objectMap = new GridObjectData[width, height];
-        for (int x  = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                GridObject gridObject = map[x, y].containedObject;
-                if (gridObject != null)
-                {
-                    objectMap[x, y] = map[x, y].containedObject.data;
-                }
-            }
-        }
-    }
-
 }

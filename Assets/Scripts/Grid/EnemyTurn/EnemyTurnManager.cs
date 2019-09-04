@@ -24,7 +24,8 @@ public class EnemyTurnManager
     public void EnactEnemyBehaviors()
     {
         int behaviorCount = 0;
-        foreach (GridObject gridObject in gridObjects)
+        List<GridObject> sortedObjects = new List<GridObject>(gridObjects.OrderBy(go => go.id));
+        foreach (GridObject gridObject in sortedObjects)
         {
             List<EnemyTurnBehavior> behaviors = new List<EnemyTurnBehavior>(
                 gridObject.data.enemyTurnBehaviors.OrderBy(b => b.priority));
@@ -88,3 +89,4 @@ public class EnemyTurnStarted : GameEvent
 {
 
 }
+

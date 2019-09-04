@@ -7,6 +7,7 @@ public class Attack : EnemyTurnBehavior
     public readonly int moveSpeed;
     public readonly int damage;
     public readonly int range;
+    private const int priorityThreshold = 40;
 
     public Attack(int moveSpeed_, int damage_, int range_) : base(2)
     {
@@ -21,9 +22,66 @@ public class Attack : EnemyTurnBehavior
         PerformAttack(gridObject);
     }
 
-    public GridObject GetCurrentTarget()
+    public PlannedAttack GetCurrentTarget(GridObject gridObject)
     {
-
+        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+            moveSpeed, gridObject);
+        List<GridObject> priorityTargets = new List<GridObject>();
+        foreach(GridObject gridObj in Services.LevelManager.mapManager.gridObjectList)
+        {
+            if(gridObj != gridObject && gridObj.data.targetPriority >= priorityThreshold)
+            {
+                priorityTargets.Add(gridObj);
+            }
+        }
+        // if there are any high priority targets within attack range, go for the highest amongst them
+        GridObject highestPriorityTargetInRange = null;
+        int highestPriority = 0;
+        List<MapTile> plannedPath = new List<MapTile>();
+        foreach (MapTile tile in tilesInRange)
+        {
+            foreach (GridObject priorityTarget in priorityTargets)
+            {
+                int dist = priorityTarget.currentTile.coord.Distance(tile.coord);
+                if (dist > 0 && dist <= range && priorityTarget.data.targetPriority >= highestPriority)
+                {
+                    if (highestPriorityTargetInRange != priorityTarget)
+                    {
+                        highestPriority = priorityTarget.data.targetPriority;
+                        highestPriorityTargetInRange = priorityTarget;
+                        plannedPath = AStarSearch.ShortestPath(gridObject.currentTile, tile,
+                            gridObject);
+                    }
+                    else
+                    {
+                        List<MapTile> path = AStarSearch.ShortestPath(gridObject.currentTile, tile, 
+                            gridObject);
+                        if (path.Count < plannedPath.Count)
+                        {
+                            plannedPath = path;
+                        }
+                    }
+                }
+            }
+        }
+        if (highestPriorityTargetInRange != null)
+        {
+            return new PlannedAttack(highestPriorityTargetInRange, plannedPath);
+        }
+        // otherwise, go towards the closest high priority target
+        GridObject closestPriorityTarget = null;
+        int minDistToClosestPriorityTarget = int.MaxValue;
+        foreach(GridObject priorityTarget in priorityTargets)
+        {
+            int dist = priorityTarget.currentTile.coord.Distance(gridObject.currentTile.coord);
+            if (dist < minDistToClosestPriorityTarget)
+            {
+                closestPriorityTarget = priorityTarget;
+            }
+        }
+        // TODO: figure out how to blaze a path to the target
+        plannedPath = AStarSearch.ShortestPath
+        return closestPriorityTarget;
     }
 
     private void Approach(GridObject gridObject)
@@ -258,6 +316,11 @@ public class ObjectAttacked : GameEvent
 
 public class PlannedAttack
 {
-    public readonly List<MapTile> path;
-    public readonly MapTile attackTarget;
+    public readonly GridObject attackTarget;
+    public readonly List<MapTile> plannedPath;
+    public PlannedAttack(GridObject attackTarget_, List<MapTile> plannedPath_)
+    {
+        attackTarget = attackTarget_;
+        plannedPath = plannedPath_;
+    }
 }
