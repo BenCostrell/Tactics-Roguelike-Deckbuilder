@@ -14,9 +14,10 @@ public class CardAttack : CardEffect
     public override void Execute(MapTile target)
     {
         base.Execute(target);
-        target.containedObject.TakeDamage(damage);
+        GridObject targetObj = target.containedObject;
+        targetObj.TakeDamage(damage);
         // for now, no animation
-        Services.EventManager.Fire(new AttackAnimationComplete(target.containedObject.id));
+        Services.EventManager.Fire(new AttackAnimationComplete(targetObj.id));
     }
 
     public override bool IsTargetLegal(MapTile target)

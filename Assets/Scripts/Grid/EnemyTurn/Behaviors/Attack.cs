@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Attack : EnemyTurnBehavior
 {
@@ -18,8 +19,16 @@ public class Attack : EnemyTurnBehavior
 
     public override void OnEnemyTurn(GridObject gridObject)
     {
-        Approach(gridObject);
-        PerformAttack(gridObject);
+        PlannedAttack plannedAttack = GetCurrentTarget(gridObject);
+        if (plannedAttack.plannedPath.Count > 0)
+        {
+            gridObject.MoveToTile(plannedAttack.plannedPath);
+        }
+        if(plannedAttack.attackTarget != null)
+        {
+            plannedAttack.attackTarget.TakeDamage(damage);
+            Services.EventManager.Fire(new ObjectAttacked(gridObject, plannedAttack.attackTarget, damage));
+        }
     }
 
     public PlannedAttack GetCurrentTarget(GridObject gridObject)
@@ -80,223 +89,286 @@ public class Attack : EnemyTurnBehavior
             }
         }
         // TODO: figure out how to blaze a path to the target
-        plannedPath = AStarSearch.ShortestPath
-        return closestPriorityTarget;
-    }
-
-    private void Approach(GridObject gridObject)
-    {
-        MapTile targetTile = null;
-        MapTile playerTile = Services.LevelManager.player.currentTile;
-        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
-            moveSpeed + range, gridObject);
-        List<MapTile> allAvailableTiles = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
-            int.MaxValue, gridObject);
-        bool playerInRange = false;
-        bool plantInRange = false;
-        GridObject closestPlant = null;
-        int closestPlantDistance = int.MaxValue;
-        int playerDistance = AStarSearch.ShortestPath(gridObject.currentTile, playerTile, gridObject).Count;
-        // check tiles in range
-        foreach (MapTile tile in tilesInRange)
+        List<List<MapTile>> possibleDirectPaths = AStarSearch.GetAllDirectPaths(gridObject.currentTile,
+            closestPriorityTarget.currentTile);
+        foreach(List<MapTile> path in possibleDirectPaths)
         {
-            if (tile == Services.LevelManager.player.currentTile)
-            {
-                playerInRange = true;
-            }
-            foreach (GridObject gridObj in tile.containedObject)
-            {
-                if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
-                {
-                    int distance = AStarSearch.ShortestPath(gridObject.currentTile,
-                        tile, gridObject).Count;
-                    if (distance < closestPlantDistance)
-                    {
-                        closestPlant = gridObj;
-                        closestPlantDistance = distance;
-                        plantInRange = true;
-                    }
-                }
-            }
+            path.RemoveAt(0);
         }
-        // check farther tiles
-        if (closestPlant == null)
+        // sort by how many obstacles, try the clearer paths first
+        possibleDirectPaths = new List<List<MapTile>>(
+            possibleDirectPaths.OrderBy(l => PathObstacleCount(l)));
+        List<MapTile> bestPath = new List<MapTile>();
+        List<MapTile> provisionalPath = new List<MapTile>();
+        MapTile nextTile = null;
+        for (int i = 0; i < possibleDirectPaths.Count; i++)
         {
-            foreach (MapTile tile in allAvailableTiles)
+            List<MapTile> path = possibleDirectPaths[i];
+            provisionalPath.Clear();
+            for (int j = 0; j < moveSpeed; j++)
             {
-                foreach (GridObject gridObj in tile.containedObject)
+                MapTile tile = path[j];
+                // stop if we would hit a non enemy object
+                if (tile.containedObject != null &&
+                    tile.containedObject.data.phylum != GridObjectData.Phylum.ENEMY)
                 {
-                    if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
-                    {
-                        int distance = AStarSearch.ShortestPath(gridObject.currentTile,
-                            tile, gridObject).Count;
-                        if (distance < closestPlantDistance)
-                        {
-                            closestPlant = gridObj;
-                            closestPlantDistance = distance;
-                        }
-                    }
-                }
-            }
-        }
-
-        // decide target
-        switch (targetPriority)
-        {
-            case TargetPriority.ONLY_PLAYER:
-                targetTile = Services.LevelManager.player.currentTile;
-                break;
-            case TargetPriority.ONLY_PLANT:
-                targetTile = closestPlant.currentTile;
-                break;
-            case TargetPriority.PLAYER_PLANT:
-                if (playerInRange || playerDistance <= closestPlantDistance)
-                {
-                    targetTile = Services.LevelManager.player.currentTile;
-                }
-                else if (closestPlant != null)
-                {
-                    targetTile = closestPlant.currentTile;
-                }
-                break;
-            case TargetPriority.PLANT_PLAYER:
-                if (plantInRange || closestPlantDistance <= playerDistance)
-                {
-                    targetTile = closestPlant.currentTile;
+                    break;
                 }
                 else
                 {
-                    targetTile = playerTile;
+                    provisionalPath.Add(tile);
                 }
-                break;
-            case TargetPriority.NEAREST:
-                if (playerDistance <= closestPlantDistance)
-                {
-                    targetTile = playerTile;
-                }
-                else
-                {
-                    targetTile = closestPlant.currentTile;
-                }
-                break;
-            case TargetPriority.NONE:
-                break;
-            default:
-                break;
-        }
-        if (targetTile == null)
-        {
-            return;
-        }
-        List<MapTile> pathToTarget = AStarSearch.ShortestPath(gridObject.currentTile,
-            targetTile, gridObject);
-        // trim the target tile itself
-        if (pathToTarget.Count > 0)
-        {
-            MapTile lastTile = pathToTarget[pathToTarget.Count - 1];
-            if (lastTile == targetTile)
-            {
-                pathToTarget.Remove(targetTile);
             }
-        }
-        List<MapTile> pathToTake = new List<MapTile>();
-        for (int i = 0; i < Mathf.Min(moveSpeed, pathToTarget.Count); i++)
-        {
-            pathToTake.Add(pathToTarget[i]);
-        }
-        if (pathToTake.Count > 0)
-        {
-            gridObject.MoveToTile(pathToTake);
-        }
-    }
-
-
-    private void PerformAttack(GridObject gridObject)
-    {
-        List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
-            range, gridObject, true);
-        bool playerInRange = false;
-        GridObject closestPlant = null;
-        int closestPlantDistance = int.MaxValue;
-        foreach (MapTile tile in tilesInRange)
-        {
-            if (tile == Services.LevelManager.player.currentTile)
+            MapTile provisionalNextTile = path[provisionalPath.Count];
+            if (provisionalPath.Count > 0)
             {
-                playerInRange = true;
-            }
-            foreach (GridObject gridObj in tile.containedObject)
-            {
-                if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+                MapTile lastTile = provisionalPath[provisionalPath.Count - 1];
+                if (lastTile.containedObject != null
+                    && lastTile.containedObject.data.phylum == GridObjectData.Phylum.ENEMY)
                 {
-                    int distance = Coord.Distance(gridObject.currentTile.coord, tile.coord);
-                    if (distance < closestPlantDistance)
-                    {
-                        closestPlant = gridObj;
-                        closestPlantDistance = distance;
-
-                    }
+                    provisionalPath.Remove(lastTile);
+                    provisionalNextTile = null;
                 }
+            }
+            if (provisionalPath.Count > bestPath.Count)
+            {
+                bestPath = new List<MapTile>(provisionalPath);
+                nextTile = provisionalNextTile;
             }
         }
         GridObject target = null;
-
-        switch (targetPriority)
+        if(nextTile != null && nextTile.containedObject != null)
         {
-            case TargetPriority.ONLY_PLAYER:
-                if (playerInRange)
-                {
-                    target = Services.LevelManager.player;
-                }
-                break;
-            case TargetPriority.ONLY_PLANT:
-                if (closestPlant != null)
-                {
-                    target = closestPlant;
-                }
-                break;
-            case TargetPriority.PLAYER_PLANT:
-                if (playerInRange)
-                {
-                    target = Services.LevelManager.player;
-                }
-                else if (closestPlant != null)
-                {
-                    target = closestPlant;
-                }
-                break;
-            case TargetPriority.PLANT_PLAYER:
-                if (closestPlant != null)
-                {
-                    target = closestPlant;
-                }
-                else if (playerInRange)
-                {
-                    target = Services.LevelManager.player;
-                }
-                break;
-            case TargetPriority.NEAREST:
-                if (playerInRange && Coord.Distance(Services.LevelManager.player.currentTile.coord,
-                    gridObject.currentTile.coord) < closestPlantDistance)
-                {
-                    target = Services.LevelManager.player;
-                }
-                else if (closestPlant != null)
-                {
-                    target = closestPlant;
-                }
-                break;
-            case TargetPriority.NONE:
-                break;
-            default:
-                break;
+            target = nextTile.containedObject;
         }
-
-        if (target == null) return;
-
-        target.TakeDamage(damage);
-        Services.EventManager.Fire(new ObjectAttacked(gridObject, target, damage));
-
+        return new PlannedAttack(target, bestPath);
     }
+
+    private int PathObstacleCount(List<MapTile> path)
+    {
+        int obstacleCount = 0;
+        foreach(MapTile tile in path)
+        {
+            if(tile.containedObject != null && tile.containedObject.data.phylum != GridObjectData.Phylum.ENEMY)
+            {
+                obstacleCount += 1;
+            }
+        }
+        return obstacleCount;
+    }
+
+    //private void Approach(GridObject gridObject)
+    //{
+    //    MapTile targetTile = null;
+    //    MapTile playerTile = Services.LevelManager.player.currentTile;
+    //    List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+    //        moveSpeed + range, gridObject);
+    //    List<MapTile> allAvailableTiles = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+    //        int.MaxValue, gridObject);
+    //    bool playerInRange = false;
+    //    bool plantInRange = false;
+    //    GridObject closestPlant = null;
+    //    int closestPlantDistance = int.MaxValue;
+    //    int playerDistance = AStarSearch.ShortestPath(gridObject.currentTile, playerTile, gridObject).Count;
+    //    // check tiles in range
+    //    foreach (MapTile tile in tilesInRange)
+    //    {
+    //        if (tile == Services.LevelManager.player.currentTile)
+    //        {
+    //            playerInRange = true;
+    //        }
+    //        foreach (GridObject gridObj in tile.containedObject)
+    //        {
+    //            if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+    //            {
+    //                int distance = AStarSearch.ShortestPath(gridObject.currentTile,
+    //                    tile, gridObject).Count;
+    //                if (distance < closestPlantDistance)
+    //                {
+    //                    closestPlant = gridObj;
+    //                    closestPlantDistance = distance;
+    //                    plantInRange = true;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    // check farther tiles
+    //    if (closestPlant == null)
+    //    {
+    //        foreach (MapTile tile in allAvailableTiles)
+    //        {
+    //            foreach (GridObject gridObj in tile.containedObject)
+    //            {
+    //                if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+    //                {
+    //                    int distance = AStarSearch.ShortestPath(gridObject.currentTile,
+    //                        tile, gridObject).Count;
+    //                    if (distance < closestPlantDistance)
+    //                    {
+    //                        closestPlant = gridObj;
+    //                        closestPlantDistance = distance;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+
+    //    // decide target
+    //    switch (targetPriority)
+    //    {
+    //        case TargetPriority.ONLY_PLAYER:
+    //            targetTile = Services.LevelManager.player.currentTile;
+    //            break;
+    //        case TargetPriority.ONLY_PLANT:
+    //            targetTile = closestPlant.currentTile;
+    //            break;
+    //        case TargetPriority.PLAYER_PLANT:
+    //            if (playerInRange || playerDistance <= closestPlantDistance)
+    //            {
+    //                targetTile = Services.LevelManager.player.currentTile;
+    //            }
+    //            else if (closestPlant != null)
+    //            {
+    //                targetTile = closestPlant.currentTile;
+    //            }
+    //            break;
+    //        case TargetPriority.PLANT_PLAYER:
+    //            if (plantInRange || closestPlantDistance <= playerDistance)
+    //            {
+    //                targetTile = closestPlant.currentTile;
+    //            }
+    //            else
+    //            {
+    //                targetTile = playerTile;
+    //            }
+    //            break;
+    //        case TargetPriority.NEAREST:
+    //            if (playerDistance <= closestPlantDistance)
+    //            {
+    //                targetTile = playerTile;
+    //            }
+    //            else
+    //            {
+    //                targetTile = closestPlant.currentTile;
+    //            }
+    //            break;
+    //        case TargetPriority.NONE:
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //    if (targetTile == null)
+    //    {
+    //        return;
+    //    }
+    //    List<MapTile> pathToTarget = AStarSearch.ShortestPath(gridObject.currentTile,
+    //        targetTile, gridObject);
+    //    // trim the target tile itself
+    //    if (pathToTarget.Count > 0)
+    //    {
+    //        MapTile lastTile = pathToTarget[pathToTarget.Count - 1];
+    //        if (lastTile == targetTile)
+    //        {
+    //            pathToTarget.Remove(targetTile);
+    //        }
+    //    }
+    //    List<MapTile> pathToTake = new List<MapTile>();
+    //    for (int i = 0; i < Mathf.Min(moveSpeed, pathToTarget.Count); i++)
+    //    {
+    //        pathToTake.Add(pathToTarget[i]);
+    //    }
+    //    if (pathToTake.Count > 0)
+    //    {
+    //        gridObject.MoveToTile(pathToTake);
+    //    }
+    //}
+
+    //private void PerformAttack(GridObject gridObject)
+    //{
+    //    List<MapTile> tilesInRange = AStarSearch.FindAllAvailableGoals(gridObject.currentTile,
+    //        range, gridObject, true);
+    //    bool playerInRange = false;
+    //    GridObject closestPlant = null;
+    //    int closestPlantDistance = int.MaxValue;
+    //    foreach (MapTile tile in tilesInRange)
+    //    {
+    //        if (tile == Services.LevelManager.player.currentTile)
+    //        {
+    //            playerInRange = true;
+    //        }
+    //        foreach (GridObject gridObj in tile.containedObject)
+    //        {
+    //            if (gridObj.data.phylum == GridObjectData.Phylum.PLANT)
+    //            {
+    //                int distance = Coord.Distance(gridObject.currentTile.coord, tile.coord);
+    //                if (distance < closestPlantDistance)
+    //                {
+    //                    closestPlant = gridObj;
+    //                    closestPlantDistance = distance;
+
+    //                }
+    //            }
+    //        }
+    //    }
+    //    GridObject target = null;
+
+    //    switch (targetPriority)
+    //    {
+    //        case TargetPriority.ONLY_PLAYER:
+    //            if (playerInRange)
+    //            {
+    //                target = Services.LevelManager.player;
+    //            }
+    //            break;
+    //        case TargetPriority.ONLY_PLANT:
+    //            if (closestPlant != null)
+    //            {
+    //                target = closestPlant;
+    //            }
+    //            break;
+    //        case TargetPriority.PLAYER_PLANT:
+    //            if (playerInRange)
+    //            {
+    //                target = Services.LevelManager.player;
+    //            }
+    //            else if (closestPlant != null)
+    //            {
+    //                target = closestPlant;
+    //            }
+    //            break;
+    //        case TargetPriority.PLANT_PLAYER:
+    //            if (closestPlant != null)
+    //            {
+    //                target = closestPlant;
+    //            }
+    //            else if (playerInRange)
+    //            {
+    //                target = Services.LevelManager.player;
+    //            }
+    //            break;
+    //        case TargetPriority.NEAREST:
+    //            if (playerInRange && Coord.Distance(Services.LevelManager.player.currentTile.coord,
+    //                gridObject.currentTile.coord) < closestPlantDistance)
+    //            {
+    //                target = Services.LevelManager.player;
+    //            }
+    //            else if (closestPlant != null)
+    //            {
+    //                target = closestPlant;
+    //            }
+    //            break;
+    //        case TargetPriority.NONE:
+    //            break;
+    //        default:
+    //            break;
+    //    }
+
+    //    if (target == null) return;
+
+    //    target.TakeDamage(damage);
+    //    Services.EventManager.Fire(new ObjectAttacked(gridObject, target, damage));
+
+    //}
 
 }
 

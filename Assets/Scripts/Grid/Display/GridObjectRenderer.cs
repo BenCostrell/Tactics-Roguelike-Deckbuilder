@@ -24,6 +24,8 @@ public class GridObjectRenderer : MonoBehaviour
     public void Initialize(GridObject gridObject, MapTile mapTile)
     {
         sr = GetComponent<SpriteRenderer>();
+        Debug.Assert(sr != null);
+        Debug.Assert(gridObject != null);
         sr.sprite = gridObject.data.sprite;
         id = gridObject.id;
         gameObject.name = gridObject.data.gridObjectName;

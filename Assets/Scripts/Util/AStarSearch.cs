@@ -105,6 +105,62 @@ public static class AStarSearch
         return availableGoals;
     }
 
+
+    public static List<List<MapTile>> GetAllDirectPaths(MapTile start, MapTile target)
+    {
+        List<List<MapTile>> paths = new List<List<MapTile>>();
+        Coord diff = target.coord.Subtract(start.coord);
+        MapTile horizontalNeighbor = null;
+        MapTile verticalNeighbor = null;
+        //Debug.Log("finding path from " + start.coord + " to " + target.coord);
+        Dictionary<MapTile, List<List<MapTile>>> pathsFromTiles = 
+            new Dictionary<MapTile, List<List<MapTile>>>();
+        foreach (MapTile neighbor in start.neighbors)
+        {
+            int xDiff = neighbor.coord.Subtract(start.coord).x;
+            int yDiff = neighbor.coord.Subtract(start.coord).y;
+            if (xDiff != 0 && diff.x != 0 && Mathf.Sign(xDiff) == Mathf.Sign(diff.x))
+            {
+                horizontalNeighbor = neighbor;
+            }
+            if (yDiff != 0 && diff.y != 0 && Mathf.Sign(yDiff) == Mathf.Sign(diff.y))
+            {
+                verticalNeighbor = neighbor;
+            }
+        }
+        if (horizontalNeighbor == target || verticalNeighbor == target)
+        {
+            paths.Add(new List<MapTile>() { start, target });
+            return paths;
+        }
+        List<MapTile> promisingNeighbors = new List<MapTile>();
+        if (horizontalNeighbor != null)
+        {
+            promisingNeighbors.Add(horizontalNeighbor);
+        }
+        if (verticalNeighbor != null)
+        {
+            promisingNeighbors.Add(verticalNeighbor);
+        }
+
+        foreach (MapTile promisingNeighbor in promisingNeighbors)
+        {
+            List<List<MapTile>> pathsFromNeighbor;
+            if (!pathsFromTiles.ContainsKey(promisingNeighbor))
+            {
+                pathsFromTiles[promisingNeighbor] = GetAllDirectPaths(promisingNeighbor, target);
+            }
+            pathsFromNeighbor = pathsFromTiles[promisingNeighbor];
+
+            foreach (List<MapTile> path in pathsFromNeighbor)
+            {
+                List<MapTile> newPath = new List<MapTile>(path);
+                newPath.Insert(0, start);
+                paths.Add(newPath);
+            }
+        }
+        return paths;
+    }
 }
 
 public class PriorityQueue<T>

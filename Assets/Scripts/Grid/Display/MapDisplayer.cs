@@ -42,7 +42,10 @@ public class MapDisplayer
         Services.EventManager.Register<LevelCompleted>(OnLevelCompleted);
         foreach (MapTile tile in map)
         {
-            Services.EventManager.Fire(new GridObjectSpawned(tile.containedObject, tile));
+            if (tile.containedObject != null)
+            {
+                Services.EventManager.Fire(new GridObjectSpawned(tile.containedObject, tile));
+            }
         }
         GameObject reticleObj = new GameObject();
         reticle = reticleObj.AddComponent<Reticle>();
