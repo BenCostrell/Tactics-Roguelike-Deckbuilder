@@ -46,7 +46,7 @@ public class OvermapManager : MonoBehaviour
         playerIcon.localPosition = playerStart;
         int nextDifficulty = currentLevel.difficulty + 1;
         List<GridObjectData> possibleEnemies = Services.GridObjectDataManager.GetEnemies();
-        IntVector2 size = new IntVector2(Mathf.Min(8, nextDifficulty + 3), 6);
+        IntVector2 size = new IntVector2(Mathf.Min(8, nextDifficulty/2 + 5), 6);
         for (int i = 0; i < 2; i++)
         {
             OvermapTile option = Instantiate(overmapTilePrefab, transform);
@@ -67,13 +67,33 @@ public class OvermapManager : MonoBehaviour
             newSpawnData = new GridObjectSpawnData(addedEnemy, numToSpawn);
             enemySpawns.Add(newSpawnData);
             //this part is jank right now
+            List<GridObjectSpawnData> rewardSpawns = new List<GridObjectSpawnData>();
+            if(nextDifficulty <= 2)
+            {
+                rewardSpawns.Add(new GridObjectSpawnData(
+                    Services.GridObjectDataManager.GetData("CHEST"), 1));
+            }
+            else
+            {
+                float springProbability = 0.3f;
+                if(Random.value <= springProbability)
+                {
+                    rewardSpawns.Add(new GridObjectSpawnData(
+                        Services.GridObjectDataManager.GetData("CHEST"), 1));
+                    rewardSpawns.Add(new GridObjectSpawnData(
+                        Services.GridObjectDataManager.GetData("SPRING"), 1));
+                }
+                else
+                {
+                    rewardSpawns.Add(new GridObjectSpawnData(
+                        Services.GridObjectDataManager.GetData("CHEST"), 2));
+                }
+            }
+
             LevelData optionLevelData = new LevelData(nextDifficulty, size, enemySpawns,
                 new List<GridObjectSpawnData>(){
-                                    new GridObjectSpawnData( Services.GridObjectDataManager.GetData("BRUSH"),
-                                    (size.x*2)-3) },
-                new List<GridObjectSpawnData>() {
-                                    new GridObjectSpawnData(Services.GridObjectDataManager.GetData("CHEST"), 
-                                    nextDifficulty > 2 ? 2 : 1)});
+                                    new GridObjectSpawnData( Services.GridObjectDataManager
+                                    .GetData("BRUSH"),(size.x*2)-3) },rewardSpawns);
             Coord optionCoord = new Coord(currentLevelCoord.x + (1 - i), currentLevelCoord.y + i);
             option.Init(optionLevelData, optionCoord, true);
             SaveData.currentlyLoadedData.levelDatas[optionCoord.x, optionCoord.y] = optionLevelData;

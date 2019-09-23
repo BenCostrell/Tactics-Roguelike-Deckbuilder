@@ -20,7 +20,7 @@ public class GridObject
     public int maxHealth { get; protected set; }
     public int currentHealth { get; protected set; }
 
-    public bool opened;
+    public bool used;
 
     public GridObject(GridObjectData data_)
     {
@@ -42,7 +42,7 @@ public class GridObject
         MapTile originalTile = currentTile;
         Services.EventManager.Fire(new GridObjectMoved(this, originalTile, path));
         ExitTile(originalTile);
-        EnterTile(path[path.Count-1]);
+        EnterTile(path[path.Count - 1]);
     }
 
     private void EnterTile(MapTile mapTile)
@@ -87,12 +87,12 @@ public class GridObject
         OnInteract();
     }
 
-    public void TakeDamage(int damage)
+    public void ChangeHealth(int change)
     {
         int prevHealth = currentHealth;
-        currentHealth = Mathf.Max(0, currentHealth - damage);
-        int damageTaken = prevHealth - currentHealth;
-        Services.EventManager.Fire(new DamageTaken(this, damageTaken));
+        currentHealth = Mathf.Clamp(currentHealth + change, 0, maxHealth);
+        int healthChange = prevHealth - currentHealth;
+        Services.EventManager.Fire(new HealthChange(this, healthChange));
         if (currentHealth == 0) Die();
     }
 
@@ -138,15 +138,15 @@ public class GridObjectSpawned : GameEvent
     }
 }
 
-public class DamageTaken : GameEvent
+public class HealthChange : GameEvent
 {
     public readonly GridObject gridObject;
-    public readonly int damage;
+    public readonly int change;
 
-    public DamageTaken(GridObject gridObject_, int damage_)
+    public HealthChange(GridObject gridObject_, int change_)
     {
         gridObject = gridObject_;
-        damage = damage_;
+        change = change_;
     }
 }
 

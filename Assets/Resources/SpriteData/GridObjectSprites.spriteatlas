@@ -36,7 +36,8 @@ SpriteAtlas:
     - {fileID: -4343436406771531980, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
     - {fileID: 5304976422540298122, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
     - {fileID: 982701606790655212, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
-    totalSpriteSurfaceArea: 1536
+    - {fileID: -129996690959384901, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+    totalSpriteSurfaceArea: 1792
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -44,6 +45,7 @@ SpriteAtlas:
   - {fileID: -4343436406771531980, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   - {fileID: 982701606790655212, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   - {fileID: 6344205350350198175, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
+  - {fileID: -129996690959384901, guid: 631495c1f18ebc84496d80090d1fb756, type: 3}
   - {fileID: 21300000, guid: 48e6fb92e1af8c8488ae948402fe1447, type: 3}
   - {fileID: 21300000, guid: 6b174c1bf79366e4783fc51850b594dc, type: 3}
   m_PackedSpriteNamesToIndex:
@@ -51,6 +53,7 @@ SpriteAtlas:
   - chest
   - octopus
   - brush
+  - spring
   - player
   - goblin
   m_Tag: GridObjectSprites

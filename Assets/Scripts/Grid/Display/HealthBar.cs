@@ -26,7 +26,7 @@ public class HealthBar : MonoBehaviour
         srs = new List<SpriteRenderer>() { frontBar, backBar, animatedBar };
         animQueue = new Queue<HealthChangeAnimation>();
 
-        Services.EventManager.Register<DamageTaken>(OnDamageTaken);
+        Services.EventManager.Register<HealthChange>(OnHealthChange);
         Services.EventManager.Register<AttackAnimationComplete>(OnAttackAnimationComplete);
         Services.EventManager.Register<InputHover>(OnInputHover);
         gameObject.SetActive(false);
@@ -86,22 +86,22 @@ public class HealthBar : MonoBehaviour
         Services.EventManager.Unregister<InputHover>(OnInputHover);
     }
 
-    public void OnDamageTaken(DamageTaken e)
+    public void OnHealthChange(HealthChange e)
     {
         if (e.gridObject.id != id) return;
-        animQueue.Enqueue(new HealthChangeAnimation(e.damage, e.gridObject.currentHealth,
+        animQueue.Enqueue(new HealthChangeAnimation(e.change, e.gridObject.currentHealth,
             e.gridObject.maxHealth));
     }
 
     public class HealthChangeAnimation
     {
-        public readonly int damage;
+        public readonly int change;
         public readonly int health;
         public readonly int maxHealth;
 
-        public HealthChangeAnimation(int damage_, int health_, int maxHealth_)
+        public HealthChangeAnimation(int change_, int health_, int maxHealth_)
         {
-            damage = damage_;
+            change = change_;
             health = health_;
             maxHealth = maxHealth_;
         }
@@ -117,7 +117,7 @@ public class HealthBar : MonoBehaviour
 
     private void OnDestroy()
     {
-        Services.EventManager.Unregister<DamageTaken>(OnDamageTaken);
+        Services.EventManager.Unregister<HealthChange>(OnHealthChange);
         Services.EventManager.Unregister<AttackAnimationComplete>(OnAttackAnimationComplete);
         Services.EventManager.Unregister<InputHover>(OnInputHover);
     }

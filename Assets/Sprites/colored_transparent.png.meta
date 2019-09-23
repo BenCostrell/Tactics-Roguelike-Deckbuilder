@@ -523,7 +523,7 @@ TextureImporter:
     second: colored_transparent_172
   - first:
       213: -129996690959384901
-    second: colored_transparent_173
+    second: spring
   - first:
       213: 2561090150693558369
     second: colored_transparent_174
@@ -7208,7 +7208,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: colored_transparent_173
+      name: spring
       rect:
         serializedVersion: 2
         x: 238

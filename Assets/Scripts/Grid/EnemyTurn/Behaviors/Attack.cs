@@ -26,7 +26,7 @@ public class Attack : EnemyTurnBehavior
         }
         if(plannedAttack.attackTarget != null)
         {
-            plannedAttack.attackTarget.TakeDamage(damage);
+            plannedAttack.attackTarget.ChangeHealth(-damage);
             Services.EventManager.Fire(new ObjectAttacked(gridObject, plannedAttack.attackTarget, damage));
         }
     }
@@ -75,6 +75,9 @@ public class Attack : EnemyTurnBehavior
         }
         if (highestPriorityTargetInRange != null)
         {
+            //Debug.Log(gridObject.data.gridObjectName + " at " + gridObject.currentTile.coord +
+            //    " going for " + plannedPath[plannedPath.Count - 1].coord + " as high priority" +
+            //    " target in range");
             return new PlannedAttack(highestPriorityTargetInRange, plannedPath);
         }
         // otherwise, go towards the closest high priority target
@@ -83,12 +86,18 @@ public class Attack : EnemyTurnBehavior
         foreach(GridObject priorityTarget in priorityTargets)
         {
             int dist = priorityTarget.currentTile.coord.Distance(gridObject.currentTile.coord);
-            if (dist < minDistToClosestPriorityTarget)
+            //Debug.Log("for " + gridObject.data.gridObjectName + " " + priorityTarget.data.gridObjectName
+            //    + " is " + dist + " away");
+            if (dist < minDistToClosestPriorityTarget || 
+                (dist == minDistToClosestPriorityTarget
+                && priorityTarget.data.targetPriority > closestPriorityTarget.data.targetPriority))
             {
                 closestPriorityTarget = priorityTarget;
+                minDistToClosestPriorityTarget = dist;
             }
         }
-        // TODO: figure out how to blaze a path to the target
+        //Debug.Log("closest target is " + closestPriorityTarget.data.gridObjectName);
+        // blaze a path if necessary
         List<List<MapTile>> possibleDirectPaths = AStarSearch.GetAllDirectPaths(gridObject.currentTile,
             closestPriorityTarget.currentTile);
         foreach(List<MapTile> path in possibleDirectPaths)
@@ -101,11 +110,12 @@ public class Attack : EnemyTurnBehavior
         List<MapTile> bestPath = new List<MapTile>();
         List<MapTile> provisionalPath = new List<MapTile>();
         MapTile nextTile = null;
+        //Debug.Log("found " + possibleDirectPaths.Count + " possible direct paths");
         for (int i = 0; i < possibleDirectPaths.Count; i++)
         {
             List<MapTile> path = possibleDirectPaths[i];
             provisionalPath.Clear();
-            for (int j = 0; j < moveSpeed; j++)
+            for (int j = 0; j < Mathf.Min(path.Count,moveSpeed); j++)
             {
                 MapTile tile = path[j];
                 // stop if we would hit a non enemy object
@@ -130,17 +140,22 @@ public class Attack : EnemyTurnBehavior
                     provisionalNextTile = null;
                 }
             }
-            if (provisionalPath.Count > bestPath.Count)
+            if (provisionalPath.Count > bestPath.Count || (bestPath.Count == 0 && nextTile == null))
             {
                 bestPath = new List<MapTile>(provisionalPath);
                 nextTile = provisionalNextTile;
             }
         }
         GridObject target = null;
+        //Debug.Log("considering next tile at " + nextTile.coord);
         if(nextTile != null && nextTile.containedObject != null)
         {
             target = nextTile.containedObject;
         }
+        //Debug.Log(gridObject.data.gridObjectName + " at " + gridObject.currentTile.coord +
+        //       " going towards " 
+        //       + closestPriorityTarget.data.gridObjectName + 
+        //       " target outside of range");
         return new PlannedAttack(target, bestPath);
     }
 

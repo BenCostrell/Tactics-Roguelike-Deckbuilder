@@ -21,7 +21,7 @@ public class PlayerTooltip : MonoBehaviour
         image.sprite = player.data.sprite;
         healthText.text = "<color=\"red\">HP</color> " + player.currentHealth + "/" + player.maxHealth;
         healthBarFront.fillAmount = (float)player.currentHealth / player.maxHealth;
-        Services.EventManager.Register<DamageTaken>(OnDamageTaken);
+        Services.EventManager.Register<HealthChange>(OnHealthChange);
     }
 
     // Update is called once per frame
@@ -40,7 +40,7 @@ public class PlayerTooltip : MonoBehaviour
     }
 
    
-    private void OnDamageTaken(DamageTaken e)
+    private void OnHealthChange(HealthChange e)
     {
         if (e.gridObject != Services.LevelManager.player) return;
         targetHealthFillProportion = (float)e.gridObject.currentHealth / e.gridObject.maxHealth;

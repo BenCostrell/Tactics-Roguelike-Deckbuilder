@@ -50,7 +50,7 @@ public class SaveData
     public void OnLevelLoad()
     {
         Services.EventManager.Register<EnergyChanged>(OnEnergyChanged);
-        Services.EventManager.Register<DamageTaken>(OnDamageTaken);
+        Services.EventManager.Register<HealthChange>(OnHealthChange);
         Services.EventManager.Register<LevelCompleted>(OnLevelCompleted);
         Services.EventManager.Register<CardAcquired>(OnCardAcquired);
     }
@@ -63,7 +63,7 @@ public class SaveData
         }
     }
 
-    private void OnDamageTaken(DamageTaken e)
+    private void OnHealthChange(HealthChange e)
     {
         if (e.gridObject == Services.LevelManager.player)
         {

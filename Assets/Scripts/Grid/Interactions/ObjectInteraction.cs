@@ -15,6 +15,8 @@ public abstract class ObjectInteraction
                 return new GetCard(
                     CardData.rarityStringDict[splitBehaviorString[1].ToUpper().Trim()]
                     );
+            case "HEAL":
+                return new HealInteraction(int.Parse(splitBehaviorString[1].Trim()));
             default:
                 return null;
         }

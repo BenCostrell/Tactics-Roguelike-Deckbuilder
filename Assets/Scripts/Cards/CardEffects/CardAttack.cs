@@ -15,7 +15,7 @@ public class CardAttack : CardEffect
     {
         base.Execute(target);
         GridObject targetObj = target.containedObject;
-        targetObj.TakeDamage(damage);
+        targetObj.ChangeHealth(-damage);
         // for now, no animation
         Services.EventManager.Fire(new AttackAnimationComplete(targetObj.id));
     }

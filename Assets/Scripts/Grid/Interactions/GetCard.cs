@@ -14,11 +14,11 @@ public class GetCard : ObjectInteraction
 
     public override void OnInteract(GridObject gridObject)
     {
-        if (gridObject.opened)
+        if (gridObject.used)
         {
             return;
         }
-        gridObject.opened = true;
+        gridObject.used = true;
         // get sum cardz
         List<CardData> possibleCards = Services.CardDataManager.GetCardsOfRarity(rarity);
         List<CardData> offeredCards = new List<CardData>();
